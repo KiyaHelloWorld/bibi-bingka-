@@ -1,1 +1,34 @@
-# bibi-bingka-
+# De La Salle University - Animo Christmas Toy Making Contest
+
+## Application Name: Bibi-bingka 
+
+## Team Members:
+
+- **Bea Espeleta**
+- **Elisha Lebrilla**
+- **Zak Sonido**
+- **Kiara Valencia**
+
+## User Credentials:  
+* Admin User
+    * email: **admin@mail.com**
+    * password: **admin123**
+* Dummy Customer
+    * email: ** **
+    * password: ** **
+
+## Creatives by Bea Espeleta 
+- [Insert photo here]
+
+## UI/UX design by Zak Sonido 
+- [Insert photo here]
+
+
+## Features (TO BE UPDATED):
+
+### Features by Kiara Valencia
+
+### Features by 
+
+# Commit History 
+git log --pretty=format:"| %h | %an | %s |"
