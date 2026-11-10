@@ -40,14 +40,14 @@ export default class Room extends Phaser.Scene {
     this.tutorial = new Tutorial(this, this.character);
     this.events.on('tutorialDone', () => this.updateTimeOfDay());
 
-    // debug text (remove before submitting)
+    // debug text, only shown while running `npm run dev` (hidden in the real build)
     this.debugText = this.add.text(10, 10, '', {
       fontFamily: 'monospace',
       fontSize: '14px',
       color: '#ffffff',
       backgroundColor: '#00000088',
       padding: { x: 6, y: 4 },
-    }).setDepth(200);
+    }).setDepth(200).setVisible(import.meta.env.DEV);
     this.updateDebugText();
 
     // fit everything to the screen, and again whenever the window resizes
@@ -62,9 +62,11 @@ export default class Room extends Phaser.Scene {
       callback: () => this.updateTimeOfDay(),
     });
 
-    // controls (R = reset save, for testing)
+    // controls (R = reset save, only while running `npm run dev`)
     this.keys = this.input.keyboard.addKeys('A,D');
-    this.input.keyboard.on('keydown-R', () => resetSave());
+    if (import.meta.env.DEV) {
+      this.input.keyboard.on('keydown-R', () => resetSave());
+    }
 
     // random wandering
     this.time.addEvent({
@@ -144,6 +146,9 @@ export default class Room extends Phaser.Scene {
 
     if (shouldSleep && this.character.mood !== 'sleep') {
       this.tweens.killTweensOf(this.character);
+      this.character.setAngle(0);
+      this.character.isPlayerMoving = false;
+      this.character.setFacing('front'); // don't fall asleep mid-step facing sideways
       this.character.setMood('sleep');
     }
     if (!shouldSleep && this.character.mood === 'sleep') {
