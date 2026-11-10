@@ -11,8 +11,8 @@ export default class Character extends Phaser.GameObjects.Container {
     this.isPlayerMoving = false;
     this.currentFace = null;
 
-    this.bodySprite = scene.add.image(0, 0, 'body_kid_right');
-    this.headSprite = scene.add.sprite(0, 0, 'head_idle_front');
+    this.bodySprite = scene.add.image(0, 0, 'body-kid_right');
+    this.headSprite = scene.add.sprite(0, 0, 'head-idle_front_1');
     this.add([this.bodySprite, this.headSprite]); // body first, head on top
 
     scene.add.existing(this);
