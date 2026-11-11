@@ -78,7 +78,7 @@ export const KITCHEN_TEXT = {
 export const MINIGAME = {
   start: 'Catch all the gifts! A/D to move, W to jump. E to stop.',
   win: 'You caught every gift!',
-  timeUp: 'Time is up!',
+  timeUp: "Time's up!",
   quit: 'Game stopped.',
   winBubble: 'Best Christmas ever!',
   someBubble: 'That was fun!',
@@ -86,7 +86,7 @@ export const MINIGAME = {
 
 // ---------- random things Bibi says when idle ----------
 export const IDLE_LINES = [
-  "Have an Animo Christmas",
+  "Have an Animo Christmas!",
   "Animo La Salle!",
   "Merry Christmas!",
   "Is it Nocha Buena already?",
@@ -94,7 +94,7 @@ export const IDLE_LINES = [
   "Can we play Gift Catch?",
   "I want to eat Bibingka so bad!",
   "Let's go caroling!",
-  "Simbang Gabi tonight, G?"
+  //"Simbang Gabi tonight, G?"
 ];
 export const IDLE_CHAT_MIN_S = 15;   // Bibi waits this long (at least) between idle lines
 export const IDLE_CHAT_MAX_S = 30;   // ...and at most this long
