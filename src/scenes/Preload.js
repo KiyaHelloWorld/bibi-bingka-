@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { FACE_FPS } from '../constants.js';
-import { CROPS } from '../data/items.js';
-import { addCrop, makeUiTextures, COLORS, textStyle } from '../ui.js';
+import { CROPS, GIFT_DESIGNS } from '../data/items.js';
+import { addCrop, autoCrop, makeUiTextures, COLORS, textStyle } from '../ui.js';
 
 // big heads/: face name -> number of frames
 const FACES = {
@@ -63,6 +63,10 @@ export default class Preload extends Phaser.Scene {
 
     BACKGROUNDS.forEach((b) => this.load.image(`bg-${b}`, `assets/backgrounds/${b}.png`));
     ITEMS.forEach((it) => this.load.image(`item-${it}`, `assets/items/${it}.png`));
+
+    // extra gift designs for Gift Catch: any that are missing are simply skipped
+    GIFT_DESIGNS.forEach((key) => this.load.image(key, `assets/items/${key.replace('item-', '')}.png`));
+    this.load.on('loaderror', (file) => console.warn(`Missing asset (skipped): ${file.src}`));
     ICONS.forEach((ic) => this.load.image(`icon-${ic}`, `assets/icon/${ic}.png`));
   }
 
@@ -82,6 +86,10 @@ export default class Preload extends Phaser.Scene {
     }
 
     for (const [key, box] of Object.entries(CROPS)) addCrop(this, key, box);
+    // gift designs with no crop listed in CROPS get one measured automatically
+    GIFT_DESIGNS.forEach((key) => {
+      if (this.textures.exists(key) && !this.textures.get(key).has('crop')) addCrop(this, key, autoCrop(this, key));
+    });
     makeUiTextures(this);
 
     this.scene.start('Title');

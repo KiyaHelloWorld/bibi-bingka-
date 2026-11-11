@@ -10,6 +10,10 @@ export const CROPS = {
   'icon-house_icon': [1996, 1631, 514, 547],
 };
 
+// Gift designs used in Gift Catch (files in public/assets/items/).
+// Add more here, e.g. 'item-gift_3'. Files that don't exist yet are skipped.
+export const GIFT_DESIGNS = ['item-gift', 'item-gift_2'];
+
 export const FOODS = [
   { key: 'item-food_1', name: 'Bibingka', note: 'Warm and filling', hunger: 40, happy: 5 },
   { key: 'item-food_2', name: 'Lechon', note: 'Hearty meal', hunger: 25, happy: 10 },

@@ -1,11 +1,12 @@
 import Phaser from 'phaser';
-import { PATTERNS, MINIGAME_SECONDS, HAPPY_PER_GIFT, HAPPY_ALL_GIFTS_BONUS } from '../data/minigame.js';
+import { PATTERNS, MINIGAME_SECONDS, HAPPY_PER_GIFT, HAPPY_ALL_GIFTS_BONUS, GIFT_SIZE } from '../data/minigame.js';
 import { MINIGAME } from '../data/dialogue.js';
 import { JUMP_HEIGHT } from '../constants.js';
 import { gameState } from '../gameState.js';
 import { clamp } from '../systems/needs.js';
 import { beep } from '../systems/sound.js';
 import { fit, unit } from '../ui.js';
+import { GIFT_DESIGNS } from '../data/items.js';
 
 // Gift Catch: gifts are spread across the screen in a random pattern.
 // Walk (A/D) into the low ones, jump (W) for the high ones. Catch them all for extra happiness.
@@ -37,8 +38,12 @@ export default class GiftCatch {
     c.setFacing('front');
     room.bubble.hide();
 
+    // mix the gift designs that are available (gift.png, gift_2.png, ...)
+    const designs = GIFT_DESIGNS.filter((key) => room.textures.exists(key));
+    const first = Phaser.Math.Between(0, designs.length - 1);
+
     this.gifts = this.pattern.gifts.map(([fx, level], n) => {
-      const img = room.add.image(0, 0, 'item-gift', 'crop').setDepth(14);
+      const img = room.add.image(0, 0, designs[(first + n) % designs.length], 'crop').setDepth(14);
       img.fx = fx;
       img.level = level;
       img.caught = false;
@@ -80,7 +85,7 @@ export default class GiftCatch {
     const pad = c.edge();
     const restTop = room.groundY + (c.getTopY() - c.y);       // Bibi's head when standing
     const restBottom = room.groundY + (c.getBottomY() - c.y); // Bibi's feet
-    this.size = height * 0.12;
+    this.size = height * GIFT_SIZE;
 
     this.gifts.forEach((g) => {
       g.homeX = pad + g.fx * (width - pad * 2);

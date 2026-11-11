@@ -41,6 +41,35 @@ export function addCrop(scene, key, [x, y, w, h]) {
   if (!tex.has('crop')) tex.add('crop', 0, x, y, w, h);
 }
 
+// measure the visible (non-transparent) part of a full-canvas image -> [x, y, w, h]
+export function autoCrop(scene, key) {
+  const src = scene.textures.get(key).getSourceImage();
+  const step = 4; // scan at 1/4 size, it's plenty for a crop box
+  const w = Math.ceil(src.width / step);
+  const h = Math.ceil(src.height / step);
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(src, 0, 0, w, h);
+  const data = ctx.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (data[(y * w + x) * 4 + 3] > 8) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return [0, 0, src.width, src.height];
+  const X = Math.max(0, (x0 - 1) * step);
+  const Y = Math.max(0, (y0 - 1) * step);
+  return [X, Y, Math.min(src.width - X, (x1 - x0 + 3) * step), Math.min(src.height - Y, (y1 - y0 + 3) * step)];
+}
+
 // fit an image (any frame) inside a w x h box, keeping its shape
 export function fit(img, w, h) {
   const s = Math.min(w / img.frame.width, h / img.frame.height);
