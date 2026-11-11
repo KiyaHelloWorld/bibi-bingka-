@@ -369,7 +369,8 @@ export default class HUD extends Phaser.Scene {
         { id: 'no', label: 'No, keep Bibi' },
         { id: 'yes', label: 'Yes, reset', danger: true },
       ],
-      onPick: (id) => (id === 'yes' ? this.events.emit('settings', 'reset') : this.openSettings()),
+      // Yes: reset. No: leave Settings completely, back to playing
+      onPick: (id) => { if (id === 'yes') this.events.emit('settings', 'reset'); },
       onBack: () => this.openSettings(),
     });
   }
