@@ -86,10 +86,31 @@ export default class Tutorial {
     await room.waitFor('showered');
     await say(T.showered);
 
+    // ----- Gift Catch -----
+    gameState.happy = 20;
+    hud.setNeeds(gameState);
+    hud.flash('happy');
+    room.refreshMood();
+    room.bubble.show(BUBBLES.bored, 3000);
+    beep(330, 0.08, 2);
+    await say(T.bored);
+    await say(T.gameHow);
+    room.menuLock = 'gift';
+    room.menuAllowed = true;
+    say(T.pressE_game, { advance: 'none' });
+    await room.waitFor('menu');
+    say(T.menuGame, { advance: 'none' });
+    await room.waitFor('minigame:start');
+    hud.narration.hide(); // out of the way while playing
+    room.menuAllowed = false;
+    await room.waitFor('minigame:end');
+    await room.wait(1500);
+    await say(T.gameDone);
+
     // ----- wrap up -----
     room.menuLock = null;
     await say(T.menuHelp);
-    await say(T.giftCatch);
+    await say(T.homeHelp);
     await say(T.bye);
     hud.narration.hide();
     character && room.bubble.show('Let\'s be best friends!', 3000);

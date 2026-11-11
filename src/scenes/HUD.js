@@ -3,7 +3,7 @@ import StatBar from '../objects/StatBar.js';
 import Narration from '../objects/Narration.js';
 import { controls } from '../systems/controls.js';
 import { beep } from '../systems/sound.js';
-import { MENU, FOODS } from '../data/items.js';
+import { MENU, FOODS, SETTINGS } from '../data/items.js';
 import { COLORS, textStyle, unit, fit } from '../ui.js';
 
 // Runs on top of the Room: need meters along the top, narration, the 3x3 menu,
@@ -179,12 +179,12 @@ export default class HUD extends Phaser.Scene {
       const { width } = this.scale;
       const u = unit(this);
       const area = this.freeArea();
-      const T = Math.min(68 * u, (area.height - 90 * u) / 3.6);
+      const rows = Math.ceil(MENU.length / 3);
+      const T = Math.min(72 * u, (area.height - 90 * u) / (rows * 1.25 + 0.6));
       const gap = T * 0.22;
       const pad = T * 0.28;
-      const gridW = 3 * T + 2 * gap;
-      const pw = gridW + pad * 2;
-      const ph = pw;
+      const pw = 3 * T + 2 * gap + pad * 2;
+      const ph = rows * T + (rows - 1) * gap + pad * 2;
       const total = ph + 56 * u;
       const px = width / 2 - pw / 2;
       const py = area.top + Math.max(0, (area.height - total) / 2);
@@ -227,7 +227,7 @@ export default class HUD extends Phaser.Scene {
       menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeCircle(sel.x, sel.y, s / 2);
       menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1).strokeCircle(sel.x, sel.y, s / 2 + 4 * u);
       const item = MENU[menu.idx];
-      menu.label.setText(item.id === 'home' ? (asleep ? 'Wake Up' : 'Bedtime') : item.label);
+      menu.label.setText(item.id === 'home' ? (asleep ? 'Leave Home' : 'Enter Home') : item.label);
     };
 
     const deny = () => {
@@ -254,12 +254,104 @@ export default class HUD extends Phaser.Scene {
       }
       if (a === 'left') menu.idx = (menu.idx + MENU.length - 1) % MENU.length;
       if (a === 'right') menu.idx = (menu.idx + 1) % MENU.length;
-      if (a === 'jump') menu.idx = (menu.idx + 6) % MENU.length; // up one row (wraps)
+      if (a === 'jump') menu.idx = (menu.idx + 3) % MENU.length; // next row (wraps)
       beep(700, 0.03);
       draw();
     };
 
     this.openOverlay(build, onAction, 'menu');
+  }
+
+  // ---------- settings ----------
+
+  // a small list of choices: A/D (or W) move, Q picks, E goes back
+  openChoices({ title, message = '', options, start = 0, name, onPick, onBack }) {
+    const state = { idx: start };
+    const build = (c) => {
+      const { width } = this.scale;
+      const u = unit(this);
+      const area = this.freeArea();
+      const w = 360 * u;
+      const bh = 40 * u;
+      const msgH = message ? 50 * u : 0;
+      const h = 60 * u + msgH + options.length * (bh + 10 * u) + 8 * u;
+      const x = width / 2 - w / 2;
+      const y = area.top + Math.max(0, (area.height - h - 26 * u) / 2);
+      this.backdrop(c);
+      const g = this.add.graphics();
+      g.fillStyle(0x000000, 0.25).fillRoundedRect(x, y + 6 * u, w, h, 18 * u);
+      g.fillStyle(COLORS.cream, 1).fillRoundedRect(x, y, w, h, 18 * u);
+      g.lineStyle(Math.max(2, 4 * u), COLORS.brown, 1).strokeRoundedRect(x, y, w, h, 18 * u);
+      c.add(g);
+      c.add(this.add.text(width / 2, y + 14 * u, title, textStyle(this, 24)).setOrigin(0.5, 0));
+      if (message) {
+        c.add(this.add.text(width / 2, y + 50 * u, message, textStyle(this, 14, {
+          align: 'center', wordWrap: { width: w - 40 * u },
+        })).setOrigin(0.5, 0));
+      }
+      state.buttons = options.map((opt, i) => {
+        const by = y + 56 * u + msgH + i * (bh + 10 * u);
+        const bg = this.add.graphics();
+        const label = this.add.text(width / 2, by + bh / 2, opt.label, textStyle(this, 18)).setOrigin(0.5);
+        c.add([bg, label]);
+        return { bg, label, x: x + 24 * u, y: by, w: w - 48 * u, h: bh, danger: opt.danger };
+      });
+      this.hintText(c, width / 2, y + h + 10 * u, 'A/D Choose   Q Select   E Back');
+      draw();
+    };
+    const draw = () => {
+      const u = unit(this);
+      state.buttons.forEach((b, i) => {
+        const sel = i === state.idx;
+        b.bg.clear();
+        const fill = sel ? (b.danger ? 0xe65b4f : COLORS.gold) : 0xfff7ec;
+        b.bg.fillStyle(fill, 1).fillRoundedRect(b.x, b.y, b.w, b.h, b.h / 2);
+        b.bg.lineStyle(Math.max(2, (sel ? 4 : 2) * u), sel ? COLORS.brown : 0xd7b48f, 1).strokeRoundedRect(b.x, b.y, b.w, b.h, b.h / 2);
+        b.label.setColor(sel && b.danger ? '#ffffff' : COLORS.brownHex);
+      });
+    };
+    const onAction = (a) => {
+      if (a === 'left' || a === 'jump') state.idx = (state.idx + options.length - 1) % options.length;
+      if (a === 'right') state.idx = (state.idx + 1) % options.length;
+      if (a === 'left' || a === 'right' || a === 'jump') {
+        beep(700, 0.03);
+        draw();
+      } else if (a === 'select') {
+        beep(990, 0.05, 2);
+        this.closeOverlay();
+        onPick(options[state.idx].id);
+      } else if (a === 'settings') {
+        beep(500, 0.04);
+        this.closeOverlay();
+        onBack?.();
+      }
+    };
+    this.openOverlay(build, onAction, name);
+  }
+
+  openSettings() {
+    this.openChoices({
+      title: 'Settings',
+      name: 'settings',
+      options: SETTINGS,
+      onPick: (id) => (id === 'reset' ? this.confirmReset() : this.events.emit('settings', id)),
+      onBack: () => this.openMenu(),
+    });
+  }
+
+  confirmReset() {
+    this.openChoices({
+      title: 'Reset the game?',
+      message: 'Bibi and all progress will be erased. This cannot be undone.',
+      name: 'confirmReset',
+      start: 0, // "No" is picked first, so a quick double press can't erase everything
+      options: [
+        { id: 'no', label: 'No, keep Bibi' },
+        { id: 'yes', label: 'Yes, reset', danger: true },
+      ],
+      onPick: (id) => (id === 'yes' ? this.events.emit('settings', 'reset') : this.openSettings()),
+      onBack: () => this.openSettings(),
+    });
   }
 
   // ---------- food picker ----------
