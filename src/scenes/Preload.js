@@ -30,7 +30,7 @@ const BABY_ANIMS = {
 const BABY_FILES = [...new Set(Object.values(BABY_ANIMS).flat())];
 
 const BODIES = ['kid_left', 'kid_right', 'adult_left', 'adult_right'];
-const BACKGROUNDS = ['morning_1', 'morning_2', 'night', 'kitchen', 'kitchen_table'];
+const BACKGROUNDS = ['morning_1', 'morning_2', 'night', 'kitchen', 'kitchen_table', 'living_room'];
 const ITEMS = ['egg', 'gift', 'food_1', 'food_2', 'food_3'];
 const ICONS = ['food_icon', 'house_icon'];
 
@@ -68,6 +68,8 @@ export default class Preload extends Phaser.Scene {
 
     // extra gift designs for Gift Catch: any that are missing are simply skipped
     GIFT_DESIGNS.forEach((key) => this.load.image(key, `assets/items/${key.replace('item-', '')}.png`));
+    // bedroom for sleeping: used automatically once backgrounds/bedroom.png is added
+    this.load.image('bg-bedroom', 'assets/backgrounds/bedroom.png');
     this.load.on('loaderror', (file) => console.warn(`Missing asset (skipped): ${file.src}`));
     ICONS.forEach((ic) => this.load.image(`icon-${ic}`, `assets/icon/${ic}.png`));
   }

@@ -21,16 +21,22 @@ export const FOODS = [
   { key: 'item-food_3', name: 'Macaroni Salad', note: 'Big meal', hunger: 55, happy: 5 },
 ];
 
-// The 3 x 3 menu, left to right, top to bottom (same order as the UI mockup).
-// `texture` is either one of your icons (cropped) or a pixel tile made in ui/textures.js.
+// The menu: a 3 x 3 grid, left to right, top to bottom. `null` = empty spot.
+// The icons are drawn in src/menuIcons.js.
 export const MENU = [
-  { id: 'stats',    label: 'Stats',      texture: 'tile-stats' },
-  { id: 'food',     label: 'Food',       texture: 'icon-food_icon', frame: 'crop' },
-  { id: 'shower',   label: 'Shower',     texture: 'tile-shower' },
-  { id: 'home',     label: 'Bedtime',    texture: 'icon-house_icon', frame: 'crop' },
-  { id: 'door',     label: 'Go Outside', texture: 'tile-door' },
-  { id: 'gift',     label: 'Gift Catch', texture: 'tile-gift' },
-  { id: 'phone',    label: 'Phone',      texture: 'tile-phone' },
-  { id: 'settings', label: 'Settings',   texture: 'tile-settings' },
-  { id: 'back',     label: 'Back',       texture: 'tile-back' },
+  { id: 'stats',    label: 'Stats',       texture: 'tile-stats' },
+  { id: 'home',     label: 'Enter House', texture: 'tile-home' },   // "Leave House" when inside
+  { id: 'gift',     label: 'Gift Catch',  texture: 'tile-game' },
+  { id: 'food',     label: 'Eat',         texture: 'tile-food' },
+  { id: 'sleep',    label: 'Sleep',       texture: 'tile-sleep' },  // "Wake Up" while asleep
+  { id: 'shower',   label: 'Shower',      texture: 'tile-shower' },
+  null,
+  { id: 'settings', label: 'Settings',    texture: 'tile-settings' },
+  null,
+];
+
+// Settings options (shown after choosing Settings)
+export const SETTINGS = [
+  { id: 'title', label: 'Return to Title' },
+  { id: 'reset', label: 'Reset Game' },
 ];

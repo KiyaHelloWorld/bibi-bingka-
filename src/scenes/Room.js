@@ -65,6 +65,8 @@ export default class Room extends Phaser.Scene {
     this.events.once('shutdown', () => {
       off();
       this.scale.off('resize', this.layout, this);
+      // the HUD scene is reused next time, so drop the listeners this Room added
+      ['opened', 'closed', 'choose', 'food', 'foodBack', 'settings'].forEach((e) => this.hud?.events.off(e));
     });
     // R = reset save, only while running `npm run dev`
     if (import.meta.env.DEV) {
@@ -99,6 +101,10 @@ export default class Room extends Phaser.Scene {
     this.hud.events.on('choose', (id) => this.onMenu(id));
     this.hud.events.on('food', (food) => this.kitchen.eat(food));
     this.hud.events.on('foodBack', () => this.kitchen.leave());
+    this.hud.events.on('settings', (id) => {
+      if (id === 'title') this.returnToTitle();
+      if (id === 'reset') resetSave(); // clears the save and restarts from the title screen
+    });
 
     // time of day
     this.updateTimeOfDay();
@@ -227,7 +233,7 @@ export default class Room extends Phaser.Scene {
     if (a === 'settings' && !this.minigame.active) {
       if (this.menuAllowed && this.hudReady && !this.busy) {
         this.character.stopWalking();
-        this.hud.openMenu({ lock: this.menuLock, asleep: gameState.asleep });
+        this.hud.openMenu({ lock: this.menuLock, asleep: gameState.asleep, inside: gameState.inside });
       } else {
         beep(200, 0.05);
       }
@@ -236,7 +242,7 @@ export default class Room extends Phaser.Scene {
   }
 
   onMenu(id) {
-    const blockedWhileAsleep = ['food', 'shower', 'gift', 'door'];
+    const blockedWhileAsleep = ['food', 'shower', 'gift', 'home'];
     if (gameState.asleep && blockedWhileAsleep.includes(id)) {
       this.hud.toast('Bibi is sleeping. Wake them up first!');
       return;
@@ -255,18 +261,16 @@ export default class Room extends Phaser.Scene {
         ]);
         break;
       case 'home':
+        this.setInside(!gameState.inside);
+        break;
+      case 'sleep':
         this.setAsleep(!gameState.asleep);
         break;
       case 'gift':
         this.minigame.start();
         break;
       case 'settings':
-        gameState.sound = !gameState.sound;
-        save();
-        this.hud.toast(`Sound ${gameState.sound ? 'on' : 'off'}`);
-        beep(880, 0.05);
-        break;
-      case 'back':
+        this.hud.openSettings();
         break;
       default:
         this.hud.toast('Coming soon!');
@@ -332,6 +336,7 @@ export default class Room extends Phaser.Scene {
 
   // called by GiftCatch when the game is over
   endMinigame(caught) {
+    this.signal('minigame:end');
     this.hud.setNeeds(gameState);
     if (caught > 0) this.hud.flash('happy');
     this.refreshMood();
@@ -350,8 +355,25 @@ export default class Room extends Phaser.Scene {
     this.refreshMood();
   }
 
+  // Enter House: Bibi goes inside (living room). Leave House: back out to the yard.
+  async setInside(inside) {
+    this.busy = true;
+    this.character.stopWalking();
+    beep(inside ? 660 : 880, 0.05, 3);
+    await this.fade(250, true);
+    gameState.inside = inside;
+    save();
+    this.updateTimeOfDay();
+    this.character.setFacing('front');
+    await this.fade(250, false);
+    this.busy = false;
+    this.bubble.show(inside ? BUBBLES.inside : BUBBLES.outside, 2000);
+  }
+
+  // Sleep / Wake Up. (Sleeps in the bedroom once bedroom.png is added; until then, where Bibi is.)
   setAsleep(asleep) {
     gameState.asleep = asleep;
+    this.cameras.main.flash(250, 255, 255, 255);
     save();
     this.character.stopWalking();
     this.character.setFacing('front');
@@ -446,7 +468,9 @@ export default class Room extends Phaser.Scene {
     this.wasNight = night;
 
     let bgKey;
-    if (gameState.asleep || night) bgKey = 'bg-night';
+    if (gameState.asleep && this.textures.exists('bg-bedroom')) bgKey = 'bg-bedroom'; // once bedroom.png is added
+    else if (gameState.inside) bgKey = 'bg-living_room';
+    else if (night) bgKey = 'bg-night';
     else if (hour < DAYTIME) bgKey = 'bg-morning_1';
     else bgKey = 'bg-morning_2';
     this.bg.setTexture(bgKey);
@@ -486,6 +510,15 @@ export default class Room extends Phaser.Scene {
 
   wait(ms) {
     return new Promise((r) => this.time.delayedCall(ms, r));
+  }
+
+  // Settings > Return to Title: save, close the room, show the title screen
+  async returnToTitle() {
+    save();
+    this.busy = true;
+    await this.fade(300, true);
+    this.scene.stop('HUD');
+    this.scene.start('Title');
   }
 
   // fade the room camera out (true) or back in (false)

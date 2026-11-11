@@ -3,7 +3,7 @@ import StatBar from '../objects/StatBar.js';
 import Narration from '../objects/Narration.js';
 import { controls } from '../systems/controls.js';
 import { beep } from '../systems/sound.js';
-import { MENU, FOODS } from '../data/items.js';
+import { MENU, FOODS, SETTINGS } from '../data/items.js';
 import { COLORS, textStyle, unit, fit } from '../ui.js';
 
 // Runs on top of the Room: need meters along the top, narration, the 3x3 menu,
@@ -158,6 +158,7 @@ export default class HUD extends Phaser.Scene {
       const x0 = Math.max(x, x + d);
       const y0 = y + Math.max(0, -d);
       const len = Math.min(w - (x0 - x), h - (y0 - y));
+      if (len < 30 * u) continue; // too short: would stick out of the rounded corner
       g.lineBetween(x0 + 6 * u, y0 + 6 * u, x0 + len - 6 * u, y0 + len - 6 * u);
     }
     g.lineStyle(Math.max(2, 4 * u), 0xe9b98a, 1).strokeRoundedRect(x, y, w, h, 18 * u);
@@ -170,20 +171,27 @@ export default class HUD extends Phaser.Scene {
 
   // ---------- 3x3 menu ----------
 
-  openMenu({ lock = null, asleep = false } = {}) {
-    const menu = { idx: lock ? MENU.findIndex((m) => m.id === lock) : this.lastMenuIdx ?? 1 };
+  openMenu({ lock = null, asleep = false, inside = false } = {}) {
+    const menu = { idx: lock ? MENU.findIndex((m) => m?.id === lock) : this.lastMenuIdx ?? 0 };
+    // move to the next real icon (skips the empty spots in the grid)
+    const step = (from, by) => {
+      let i = from;
+      do i = (i + by + MENU.length) % MENU.length;
+      while (!MENU[i]);
+      return i;
+    };
     beep(880, 0.05, 2);
 
     const build = (c) => {
       const { width } = this.scale;
       const u = unit(this);
       const area = this.freeArea();
-      const T = Math.min(68 * u, (area.height - 90 * u) / 3.6);
+      const rows = Math.ceil(MENU.length / 3);
+      const T = Math.min(72 * u, (area.height - 90 * u) / (rows * 1.25 + 0.6));
       const gap = T * 0.22;
       const pad = T * 0.28;
-      const gridW = 3 * T + 2 * gap;
-      const pw = gridW + pad * 2;
-      const ph = pw;
+      const pw = 3 * T + 2 * gap + pad * 2;
+      const ph = rows * T + (rows - 1) * gap + pad * 2;
       const total = ph + 56 * u;
       const px = width / 2 - pw / 2;
       const py = area.top + Math.max(0, (area.height - total) / 2);
@@ -194,6 +202,7 @@ export default class HUD extends Phaser.Scene {
       menu.frame = this.add.graphics();
       c.add(menu.frame);
       menu.tiles = MENU.map((item, i) => {
+        if (!item) return null; // empty spot
         const x = px + pad + (i % 3) * (T + gap) + T / 2;
         const y = py + pad + Math.floor(i / 3) * (T + gap) + T / 2;
         const img = fit(this.add.image(x, y, item.texture, item.frame), T, T);
@@ -214,19 +223,25 @@ export default class HUD extends Phaser.Scene {
     const draw = () => {
       const u = unit(this);
       menu.tiles.forEach((img, i) => {
+        if (!img) return;
         this.tweens.killTweensOf(img);
         img.setScale(img.baseScale);
         if (i === menu.idx) {
-          this.tweens.add({ targets: img, scale: img.baseScale * 1.15, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+          this.tweens.add({ targets: img, scale: img.baseScale * 1.05, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         }
       });
       const sel = menu.tiles[menu.idx];
-      const s = menu.T * 1.32;
+      const s = menu.T * 1.1; // selection outline size (1 = touching the icon)
       menu.frame.clear();
-      menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeRoundedRect(sel.x - s / 2, sel.y - s / 2, s, s, 14 * u);
-      menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1).strokeRoundedRect(sel.x - s / 2 - 4 * u, sel.y - s / 2 - 4 * u, s + 8 * u, s + 8 * u, 16 * u);
+      menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeRoundedRect(sel.x - s / 2, sel.y - s / 2, s, s, s * 0.24);
+      menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1)
+        .strokeRoundedRect(sel.x - s / 2 - 3 * u, sel.y - s / 2 - 3 * u, s + 6 * u, s + 6 * u, s * 0.24 + 3 * u);
       const item = MENU[menu.idx];
-      menu.label.setText(item.id === 'home' ? (asleep ? 'Wake Up' : 'Bedtime') : item.label);
+      const labels = {
+        home: inside ? 'Leave House' : 'Enter House',
+        sleep: asleep ? 'Wake Up' : 'Sleep',
+      };
+      menu.label.setText(labels[item.id] ?? item.label);
     };
 
     const deny = () => {
@@ -251,14 +266,112 @@ export default class HUD extends Phaser.Scene {
         this.closeOverlay();
         return;
       }
-      if (a === 'left') menu.idx = (menu.idx + MENU.length - 1) % MENU.length;
-      if (a === 'right') menu.idx = (menu.idx + 1) % MENU.length;
-      if (a === 'jump') menu.idx = (menu.idx + 6) % MENU.length; // up one row (wraps)
+      if (a === 'left') menu.idx = step(menu.idx, -1);
+      if (a === 'right') menu.idx = step(menu.idx, 1);
+      if (a === 'jump') {
+        // next row (wraps); if that spot is empty, the nearest icon in that row
+        const row = (Math.floor(menu.idx / 3) + 1) % Math.ceil(MENU.length / 3);
+        const col = menu.idx % 3;
+        const candidates = [col, 1, 0, 2].map((c) => row * 3 + c).filter((i) => MENU[i]);
+        if (candidates.length) menu.idx = candidates[0];
+      }
       beep(700, 0.03);
       draw();
     };
 
     this.openOverlay(build, onAction, 'menu');
+  }
+
+  // ---------- settings ----------
+
+  // a small list of choices: A/D (or W) move, Q picks, E goes back
+  openChoices({ title, message = '', options, start = 0, name, onPick, onBack }) {
+    const state = { idx: start };
+    const build = (c) => {
+      const { width } = this.scale;
+      const u = unit(this);
+      const area = this.freeArea();
+      const w = 360 * u;
+      const bh = 40 * u;
+      const msgH = message ? 50 * u : 0;
+      const h = 60 * u + msgH + options.length * (bh + 10 * u) + 8 * u;
+      const x = width / 2 - w / 2;
+      const y = area.top + Math.max(0, (area.height - h - 26 * u) / 2);
+      this.backdrop(c);
+      const g = this.add.graphics();
+      g.fillStyle(0x000000, 0.25).fillRoundedRect(x, y + 6 * u, w, h, 18 * u);
+      g.fillStyle(COLORS.cream, 1).fillRoundedRect(x, y, w, h, 18 * u);
+      g.lineStyle(Math.max(2, 4 * u), COLORS.brown, 1).strokeRoundedRect(x, y, w, h, 18 * u);
+      c.add(g);
+      c.add(this.add.text(width / 2, y + 14 * u, title, textStyle(this, 24)).setOrigin(0.5, 0));
+      if (message) {
+        c.add(this.add.text(width / 2, y + 50 * u, message, textStyle(this, 14, {
+          align: 'center', wordWrap: { width: w - 40 * u },
+        })).setOrigin(0.5, 0));
+      }
+      state.buttons = options.map((opt, i) => {
+        const by = y + 56 * u + msgH + i * (bh + 10 * u);
+        const bg = this.add.graphics();
+        const label = this.add.text(width / 2, by + bh / 2, opt.label, textStyle(this, 18)).setOrigin(0.5);
+        c.add([bg, label]);
+        return { bg, label, x: x + 24 * u, y: by, w: w - 48 * u, h: bh, danger: opt.danger };
+      });
+      this.hintText(c, width / 2, y + h + 10 * u, 'A/D Choose   Q Select   E Back');
+      draw();
+    };
+    const draw = () => {
+      const u = unit(this);
+      state.buttons.forEach((b, i) => {
+        const sel = i === state.idx;
+        b.bg.clear();
+        const fill = sel ? (b.danger ? 0xe65b4f : COLORS.gold) : 0xfff7ec;
+        b.bg.fillStyle(fill, 1).fillRoundedRect(b.x, b.y, b.w, b.h, b.h / 2);
+        b.bg.lineStyle(Math.max(2, (sel ? 4 : 2) * u), sel ? COLORS.brown : 0xd7b48f, 1).strokeRoundedRect(b.x, b.y, b.w, b.h, b.h / 2);
+        b.label.setColor(sel && b.danger ? '#ffffff' : COLORS.brownHex);
+      });
+    };
+    const onAction = (a) => {
+      if (a === 'left' || a === 'jump') state.idx = (state.idx + options.length - 1) % options.length;
+      if (a === 'right') state.idx = (state.idx + 1) % options.length;
+      if (a === 'left' || a === 'right' || a === 'jump') {
+        beep(700, 0.03);
+        draw();
+      } else if (a === 'select') {
+        beep(990, 0.05, 2);
+        this.closeOverlay();
+        onPick(options[state.idx].id);
+      } else if (a === 'settings') {
+        beep(500, 0.04);
+        this.closeOverlay();
+        onBack?.();
+      }
+    };
+    this.openOverlay(build, onAction, name);
+  }
+
+  openSettings() {
+    this.openChoices({
+      title: 'Settings',
+      name: 'settings',
+      options: SETTINGS,
+      onPick: (id) => (id === 'reset' ? this.confirmReset() : this.events.emit('settings', id)),
+      onBack: () => this.openMenu(),
+    });
+  }
+
+  confirmReset() {
+    this.openChoices({
+      title: 'Reset the game?',
+      message: 'Bibi and all progress will be erased. This cannot be undone.',
+      name: 'confirmReset',
+      start: 0, // "No" is picked first, so a quick double press can't erase everything
+      options: [
+        { id: 'no', label: 'No, keep Bibi' },
+        { id: 'yes', label: 'Yes, reset', danger: true },
+      ],
+      onPick: (id) => (id === 'yes' ? this.events.emit('settings', 'reset') : this.openSettings()),
+      onBack: () => this.openSettings(),
+    });
   }
 
   // ---------- food picker ----------

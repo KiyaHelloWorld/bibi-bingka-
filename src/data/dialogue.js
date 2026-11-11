@@ -38,8 +38,13 @@ export const TUTORIAL = {
   menuShower: 'The Shower icon is highlighted. Press Q to start the shower.',
   showered: 'Squeaky clean! Bibi feels so much better.',
 
+  bored: 'Uh oh, Bibi is bored! Playing Gift Catch is the best way to make Bibi happy.',
+  pressE_game: 'Press E to open the menu.',
+  menuGame: 'The Gift Catch icon is highlighted. Press Q to play!',
+  gameHow: 'Catch every gift! Walk into the low ones with A and D, and jump with W for the high ones.',
+  gameDone: 'Great playing! The more gifts you catch, the happier Bibi gets.',
   menuHelp: 'Press E any time to open the menu. A and D move, W jumps a row, Q chooses, and E closes it.',
-  giftCatch: 'If Bibi gets bored, pick Gift Catch in the menu and play together!',
+  homeHelp: 'Choose Enter House to go inside, and Sleep when Bibi gets tired at night.',
   bye: 'That is everything. Take good care of Bibi!',
 };
 
@@ -57,6 +62,8 @@ export const BUBBLES = {
   morning: 'Good morning!',
   grew: 'I grew!',
   moreFood: 'More food pls!',
+  inside: 'Home sweet home!',
+  outside: 'Fresh air!',
   full: "I'm full! Thank you!",
   sleepy: 'Zzz... so sleepy...',
 };

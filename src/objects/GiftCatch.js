@@ -56,6 +56,7 @@ export default class GiftCatch {
 
     room.hud.showCounter(this.counterText());
     room.hud.toast(MINIGAME.start, 3000);
+    room.signal('minigame:start');
     beep(660, 0.08, 4);
 
     if (MINIGAME_SECONDS > 0) {
