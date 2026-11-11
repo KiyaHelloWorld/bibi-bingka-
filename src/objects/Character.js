@@ -1,5 +1,21 @@
 import Phaser from 'phaser';
-import { STAGES, WALK_SPEED, EDGE_PADDING } from '../constants.js';
+import { ASSET_HEIGHT, STAGES, WALK_SPEED, EDGE_PADDING } from '../constants.js';
+
+// Top and bottom of the visible pixels on the 3267 x 2362 art canvas, per stage.
+const BOUNDS = {
+  egg: [184, 2104],
+  baby: [520, 2252],
+  kid: [520, 2252],
+  adult: [81, 2217],
+};
+
+// The baby has its own faces (heads/baby/). Facing front it uses baby_sad_1/2,
+// which already include the body. Facing sideways, a small baby face sits in the kid body.
+// Moods with no baby art (shower, sleep, sneeze, angry) borrow the big heads/ faces.
+const BABY_FACES = {
+  idle: { front: 'baby-front_idle', left: 'baby-left_idle', right: 'baby-right_idle' },
+  sad: { front: 'baby-front_sad', left: 'baby-left_sad', right: 'baby-right_sad' },
+};
 
 export default class Character extends Phaser.GameObjects.Container {
   constructor(scene, x, y, stage) {
@@ -9,16 +25,15 @@ export default class Character extends Phaser.GameObjects.Container {
     this.facing = 'front';
     this.lastSide = 'right';
     this.isPlayerMoving = false;
-    this.currentFace = null;
+    this.jumpState = { h: 0 }; // 0..1, tweened by jump()
 
     this.bodySprite = scene.add.image(0, 0, 'body-kid_right');
     this.headSprite = scene.add.sprite(0, 0, 'head-idle_front_1');
-    this.add([this.bodySprite, this.headSprite]); // body first, head on top
+    this.fullSprite = scene.add.sprite(0, 0, 'baby-baby_sad_1').setVisible(false);
+    this.add([this.bodySprite, this.headSprite, this.fullSprite]); // body first, head on top
 
     scene.add.existing(this);
-
     this.setStage(stage);
-    this.updateHead();
   }
 
   // ---------- growth ----------
@@ -27,20 +42,17 @@ export default class Character extends Phaser.GameObjects.Container {
     this.stage = stage;
 
     if (stage === 'egg') {
-      this.bodySprite.setTexture('item-egg');
+      this.bodySprite.setTexture('item-egg').setVisible(true);
       this.headSprite.setVisible(false);
+      this.fullSprite.setVisible(false);
       return;
     }
-
-    const { headOffsetY, headScale } = STAGES[stage];
-    this.headSprite.setVisible(true);
-    this.headSprite.setY(headOffsetY);
-    this.headSprite.setScale(headScale);
     this.updateBody();
+    this.updateHead();
   }
 
   canMove() {
-    return this.stage !== 'egg' && this.mood !== 'sleep';
+    return this.stage !== 'egg' && this.mood !== 'sleep' && this.mood !== 'shower';
   }
 
   wiggle() {
@@ -54,30 +66,79 @@ export default class Character extends Phaser.GameObjects.Container {
     });
   }
 
+  jump() {
+    if (this.jumpTween) return false;
+    this.jumpTween = this.scene.tweens.add({
+      targets: this.jumpState,
+      h: 1,
+      duration: 260,
+      ease: 'Quad.easeOut',
+      yoyo: true,
+      onComplete: () => {
+        this.jumpTween = null;
+        this.jumpState.h = 0;
+      },
+    });
+    return true;
+  }
+
+  // screen y of the top / bottom of the visible art
+  getTopY() {
+    return this.y + (BOUNDS[this.stage][0] - ASSET_HEIGHT / 2) * this.scaleY;
+  }
+
+  getBottomY() {
+    return this.y + (BOUNDS[this.stage][1] - ASSET_HEIGHT / 2) * this.scaleY;
+  }
+
   // ---------- look ----------
 
   setMood(mood) {
+    if (mood === this.mood) return;
     this.mood = mood;
     this.updateHead();
   }
 
   setFacing(dir) {
+    if (dir === this.facing) return;
     this.facing = dir;
-    this.updateHead();
     this.updateBody();
+    this.updateHead();
+  }
+
+  play(sprite, key) {
+    if (sprite.anims.currentAnim?.key !== key || !sprite.anims.isPlaying) sprite.play(key);
   }
 
   updateHead() {
-    // try "idle_left" first, then fall back to "sad", "sleep", etc.
-    const directional = `head-${this.mood}_${this.facing}`;
-    const face = this.scene.anims.exists(directional)
-      ? directional
-      : `head-${this.mood}`;
+    if (this.stage === 'egg') return;
 
-    if (face !== this.currentFace) {
-      this.currentFace = face;
-      this.headSprite.play(face);
+    const baby = this.stage === 'baby' && BABY_FACES[this.mood];
+    if (baby) {
+      const key = BABY_FACES[this.mood][this.facing];
+      if (this.facing === 'front') {
+        this.fullSprite.setVisible(true);
+        this.bodySprite.setVisible(false);
+        this.headSprite.setVisible(false);
+        this.play(this.fullSprite, key);
+      } else {
+        this.fullSprite.setVisible(false);
+        this.bodySprite.setVisible(true);
+        this.headSprite.setVisible(true).setPosition(0, 0).setScale(1);
+        this.play(this.headSprite, key);
+      }
+      return;
     }
+
+    const { headOffsetX = 0, headOffsetY = 0, headScale = 1 } = STAGES[this.stage];
+    this.fullSprite.setVisible(false);
+    this.bodySprite.setVisible(true);
+    this.headSprite.setVisible(true).setPosition(headOffsetX, headOffsetY).setScale(headScale);
+
+    // try "shower_left" first, then fall back to "sad", "sleep", etc.
+    const directional = `head-${this.mood}_${this.facing}`;
+    const face = this.scene.anims.exists(directional) ? directional : `head-${this.mood}`;
+    this.play(this.headSprite, face);
   }
 
   updateBody() {
@@ -86,7 +147,8 @@ export default class Character extends Phaser.GameObjects.Container {
     // no front body exists, so facing front keeps the last side
     const side = this.facing === 'front' ? this.lastSide : this.facing;
     this.lastSide = side;
-    this.bodySprite.setTexture(`body-${this.stage}_${side}`);
+    const bodyStage = this.stage === 'baby' ? 'kid' : this.stage; // the baby wears the kid body
+    this.bodySprite.setTexture(`body-${bodyStage}_${side}`);
   }
 
   // ---------- movement ----------
@@ -104,14 +166,23 @@ export default class Character extends Phaser.GameObjects.Container {
     });
   }
 
-  moveBy(dx) {
+  stopWalking() {
     this.scene.tweens.killTweensOf(this);
     this.setAngle(0);
+  }
+
+  // how close to the screen edge Bibi may go without being cut off
+  edge() {
+    return Math.max(EDGE_PADDING, 820 * this.scaleX);
+  }
+
+  moveBy(dx) {
+    this.stopWalking();
     this.isPlayerMoving = true;
     this.setFacing(dx < 0 ? 'left' : 'right');
 
-    const maxX = this.scene.scale.width - EDGE_PADDING;
-    this.x = Phaser.Math.Clamp(this.x + dx, EDGE_PADDING, maxX);
+    const pad = this.edge();
+    this.x = Phaser.Math.Clamp(this.x + dx, pad, this.scene.scale.width - pad);
   }
 
   stopMoving() {

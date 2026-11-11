@@ -2,19 +2,33 @@
 export const ASSET_WIDTH = 3267;
 export const ASSET_HEIGHT = 2362;
 
+// ---------- hardware buttons ----------
+// Keyboard key -> game action. Change the keys here when the real buttons are wired up.
+// (Hardware can also call window.bibi.press('select') etc. directly.)
+export const BUTTONS = {
+  W: 'jump',
+  A: 'left',
+  D: 'right',
+  E: 'settings', // opens the menu
+  Q: 'select',
+};
+
 // character size and position (as a fraction of the screen)
 export const CHARACTER_SCREEN_HEIGHT = 0.55; // bigger = bigger character
 export const CHARACTER_MAX_SCREEN_WIDTH = 0.9;
-export const GROUND_Y = 0.72;                // 0 = top, 1 = bottom
+export const GROUND_Y = 0.68;                // 0 = top, 1 = bottom
+export const JUMP_HEIGHT = 0.12;             // fraction of the screen height
 export const FACE_FPS = 2;                   // how fast 2-frame faces flip
 
 // growth stages
-// headOffsetY: negative = up, positive = down
-// headScale: 1 = original size
+// careToGrow: care actions (feeding, showering, gifts) needed to grow to `next`
+// headOffsetX / headOffsetY / headScale: where the big heads/ faces sit on the body
+//   (the baby uses its own heads/baby/ faces, and borrows these for moods it has no art for)
 export const STAGES = {
-  egg:   { next: 'kid',   careToGrow: 5 },
-  kid:   { next: 'adult', careToGrow: 20, headOffsetY: 260, headScale: 0.8 },
-  adult: { next: null,    careToGrow: null, headOffsetY: 0, headScale: 1.1 },
+  egg:   { next: 'baby',  careToGrow: null },
+  baby:  { next: 'kid',   careToGrow: 8,  headOffsetX: 36, headOffsetY: 420, headScale: 0.74 },
+  kid:   { next: 'adult', careToGrow: 20, headOffsetX: 36, headOffsetY: 420, headScale: 0.74 },
+  adult: { next: null,    careToGrow: null, headOffsetX: 0, headOffsetY: 0, headScale: 1.1 },
 };
 
 // movement
@@ -22,6 +36,15 @@ export const MOVE_SPEED = 0.3;     // keyboard speed
 export const WALK_SPEED = 3;       // wander speed (higher = slower)
 export const WANDER_DELAY = 2000;  // ms between random walks
 export const EDGE_PADDING = 80;    // how close to the edge it can go
+
+// needs (0-100), how much they drop per real minute after the tutorial
+export const NEEDS_DECAY_PER_MIN = { hunger: 2, hygiene: 1.5, happy: 1.8 };
+export const LOW_NEED = 25;              // below this Bibi gets sad and complains
+export const MAX_AWAY_MINUTES = 180;     // most "time away" counted when the game is reopened
+export const GIFT_COOLDOWN_MS = 120000;  // one gift every 2 minutes
+
+// hatching
+export const HATCH_PRESSES = 12;
 
 // time of day (real clock, 24h)
 export const EARLY_MORNING = 5;    // morning_1 starts at 5:00

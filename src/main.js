@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import Preload from './scenes/Preload.js';
+import Title from './scenes/Title.js';
+import Story from './scenes/Story.js';
 import Room from './scenes/Room.js';
+import HUD from './scenes/HUD.js';
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -12,5 +15,5 @@ new Phaser.Game({
     width: window.innerWidth,
     height: window.innerHeight,
   },
-  scene: [Preload, Room],
+  scene: [Preload, Title, Story, Room, HUD],
 });
