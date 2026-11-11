@@ -297,7 +297,7 @@ export default class HUD extends Phaser.Scene {
       });
       pick.cw = cw;
       pick.ch = ch;
-      this.hintText(c, width / 2, top + 40 * u + ch + 12 * u, lock ? 'A/D Choose   Q Feed' : 'A/D Choose   Q Feed   E Back');
+      this.hintText(c, width / 2, top + 40 * u + ch + 12 * u, lock ? 'A/D Choose   Q Feed' : 'A/D Choose   Q Feed   E Leave kitchen');
       draw();
     };
 
@@ -325,8 +325,9 @@ export default class HUD extends Phaser.Scene {
         this.events.emit('food', FOODS[pick.idx]);
       } else if (a === 'settings') {
         if (lock) return beep(200, 0.06);
+        beep(500, 0.04);
         this.closeOverlay();
-        this.openMenu();
+        this.events.emit('foodBack'); // the Room takes Bibi out of the kitchen
       }
     };
 

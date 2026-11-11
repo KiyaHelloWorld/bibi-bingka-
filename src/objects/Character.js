@@ -85,6 +85,11 @@ export default class Character extends Phaser.GameObjects.Container {
     return true;
   }
 
+  // [top, bottom] of the visible art on the 3267 x 2362 canvas
+  artBounds() {
+    return BOUNDS[this.stage];
+  }
+
   // screen y of the top / bottom of the visible art
   getTopY() {
     return this.y + (BOUNDS[this.stage][0] - ASSET_HEIGHT / 2) * this.scaleY;

@@ -30,7 +30,7 @@ const BABY_ANIMS = {
 const BABY_FILES = [...new Set(Object.values(BABY_ANIMS).flat())];
 
 const BODIES = ['kid_left', 'kid_right', 'adult_left', 'adult_right'];
-const BACKGROUNDS = ['morning_1', 'morning_2', 'night'];
+const BACKGROUNDS = ['morning_1', 'morning_2', 'night', 'kitchen', 'kitchen_table'];
 const ITEMS = ['egg', 'gift', 'food_1', 'food_2', 'food_3'];
 const ICONS = ['food_icon', 'house_icon'];
 

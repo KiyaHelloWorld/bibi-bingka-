@@ -42,6 +42,17 @@ export const NEEDS_DECAY_PER_MIN = { hunger: 2, hygiene: 1.5, happy: 1.8 };
 export const LOW_NEED = 25;              // below this Bibi gets sad and complains
 export const MAX_AWAY_MINUTES = 180;     // most "time away" counted when the game is reopened
 
+// kitchen (mealtime). Numbers are on the 3267 x 2362 kitchen art.
+export const KITCHEN = {
+  tableTopY: 1715,          // y of the table's top edge in kitchen_table.png
+  bibiScale: 0.55,          // Bibi's size in the chair (bigger = bigger Bibi)
+  // the table's edge lines up just under Bibi's mouth (y on Bibi's art, per stage).
+  // bigger number = Bibi sits higher above the table
+  chinY: { baby: 2090, kid: 2010, adult: 1780 },
+  foodSize: 1000,           // size of the food on the table
+  fullAt: 80,               // Bibi asks for more food until Hunger reaches this
+};
+
 // hatching
 export const HATCH_PRESSES = 12;
 

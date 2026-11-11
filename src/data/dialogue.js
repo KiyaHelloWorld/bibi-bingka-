@@ -29,8 +29,8 @@ export const TUTORIAL = {
   hungry: 'Oh, look at that! Bibi is hungry!',
   pressE_food: 'Feed them by pressing E.',
   menuFood: 'The Food icon is highlighted. Press Q to open it.',
-  pickFood: 'Choose a food with A and D, then press Q to feed Bibi.',
-  fed: "Yum! Bibi's tummy is full.",
+  pickFood: 'Bibi is at the table! Choose a food with A and D, then press Q to serve it.',
+  fed: 'Yum! Bibi loved that!',
 
   stinky: "I'm so stinky :(",
   wantsShower: 'Bibi wants to shower!',
@@ -56,7 +56,15 @@ export const BUBBLES = {
   night: 'Good night...',
   morning: 'Good morning!',
   grew: 'I grew!',
+  moreFood: 'More food pls!',
+  full: "I'm full! Thank you!",
   sleepy: 'Zzz... so sleepy...',
+};
+
+// ---------- kitchen ----------
+export const KITCHEN_TEXT = {
+  more: 'Bibi is still hungry! Press Q to pick more food, or E to leave the kitchen.',
+  moreLocked: 'Bibi is still hungry! Press Q to pick more food.',
 };
 
 // ---------- Gift Catch minigame ----------
