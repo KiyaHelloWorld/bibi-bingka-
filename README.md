@@ -9,14 +9,6 @@
 - **Zak Sonido**
 - **Kiara Valencia**
 
-## User Credentials:  
-* Admin User
-    * email: **admin@mail.com**
-    * password: **admin123**
-* Dummy Customer
-    * email: ** **
-    * password: ** **
-
 ## Creatives by Bea Espeleta 
 - [Insert photo here]
 
@@ -26,9 +18,9 @@
 
 ## Features (TO BE UPDATED):
 
-### Features by Kiara Valencia
+### Features by Kiara Valencia (Software development) 
 
-### Features by 
+### Features by Elisha Lebrilla (Embedded Systems development)
 
 # Commit History 
 git log --pretty=format:"| %h | %an | %s |"
