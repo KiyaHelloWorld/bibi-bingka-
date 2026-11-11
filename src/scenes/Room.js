@@ -124,6 +124,8 @@ export default class Room extends Phaser.Scene {
 
   // needs go down over time once the tutorial is done
   startLife() {
+    this.menuAllowed = true; // (also after the tutorial)
+    this.menuLock = null;
     this.hud.setStatsVisible(true);
     this.hud.setNeeds(gameState);
     this.warned = {};

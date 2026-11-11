@@ -115,6 +115,9 @@ export default class Tutorial {
     hud.narration.hide();
     character && room.bubble.show('Let\'s be best friends!', 3000);
 
+    // hand the buttons back to the player: menu on, nothing locked
+    room.menuLock = null;
+    room.menuAllowed = true;
     this.active = false;
     gameState.tutorialDone = true;
     save();

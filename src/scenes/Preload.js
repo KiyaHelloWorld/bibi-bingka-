@@ -62,6 +62,9 @@ export default class Preload extends Phaser.Scene {
     }
     BABY_FILES.forEach((f) => this.load.image(`baby-${f}`, `assets/heads/baby/${f}.png`));
     this.load.image('head-eating_1', 'assets/heads/eating.png');
+    // baby shower face: used automatically once one of these files is added
+    this.load.image('baby-shower_baby', 'assets/heads/baby/shower_baby.png');
+    this.load.image('baby-baby_shower', 'assets/heads/baby/baby_shower.png');
 
     BACKGROUNDS.forEach((b) => this.load.image(`bg-${b}`, `assets/backgrounds/${b}.png`));
     ITEMS.forEach((it) => this.load.image(`item-${it}`, `assets/items/${it}.png`));
@@ -87,6 +90,15 @@ export default class Preload extends Phaser.Scene {
       frameRate: 4,
       repeat: -1,
     });
+
+    // baby shower face (if the file exists). It may be just the face (sits in the kid body,
+    // like baby_eating.png) or the whole baby (like baby_sad_1.png): measured to find out.
+    const babyShower = ['baby-shower_baby', 'baby-baby_shower'].find((k) => this.textures.exists(k));
+    if (babyShower) {
+      this.anims.create({ key: 'baby-shower', frames: [{ key: babyShower }], frameRate: FACE_FPS, repeat: -1 });
+      const [, top] = autoCrop(this, babyShower);
+      this.registry.set('babyShowerWholeBody', top < 1000); // whole-baby art starts near the hat (y ~520)
+    }
 
     for (const [name, files] of Object.entries(BABY_ANIMS)) {
       this.anims.create({
