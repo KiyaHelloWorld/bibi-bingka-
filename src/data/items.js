@@ -12,8 +12,8 @@ export const CROPS = {
 
 export const FOODS = [
   { key: 'item-food_1', name: 'Bibingka', note: 'Warm and filling', hunger: 40, happy: 5 },
-  { key: 'item-food_2', name: 'Lumpia', note: 'Crunchy snack', hunger: 25, happy: 10 },
-  { key: 'item-food_3', name: 'Fried Rice', note: 'Big meal', hunger: 55, happy: 5 },
+  { key: 'item-food_2', name: 'Lechon', note: 'Hearty meal', hunger: 25, happy: 10 },
+  { key: 'item-food_3', name: 'Macaroni Salad', note: 'Big meal', hunger: 55, happy: 5 },
 ];
 
 // The 3 x 3 menu, left to right, top to bottom (same order as the UI mockup).

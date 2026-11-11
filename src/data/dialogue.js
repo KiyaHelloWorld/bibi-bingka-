@@ -40,7 +40,7 @@ export const TUTORIAL = {
 
 // ---------- things Bibi says ----------
 export const BUBBLES = {
-  hi: 'Hi!!',
+  hi: 'Hello beautiful human! :)',
   wheee: 'Wheee!',
   hungry: 'My tummy is rumbling...',
   stinky: "I'm so stinky :(",
@@ -51,5 +51,5 @@ export const BUBBLES = {
   night: 'Good night...',
   morning: 'Good morning!',
   grew: 'I grew!',
-  sleepy: 'Zzz... too sleepy...',
+  sleepy: 'Zzz... so sleepy...',
 };
