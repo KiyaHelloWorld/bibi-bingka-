@@ -171,8 +171,15 @@ export default class HUD extends Phaser.Scene {
 
   // ---------- 3x3 menu ----------
 
-  openMenu({ lock = null, asleep = false } = {}) {
-    const menu = { idx: lock ? MENU.findIndex((m) => m.id === lock) : this.lastMenuIdx ?? 1 };
+  openMenu({ lock = null, asleep = false, inside = false } = {}) {
+    const menu = { idx: lock ? MENU.findIndex((m) => m?.id === lock) : this.lastMenuIdx ?? 0 };
+    // move to the next real icon (skips the empty spots in the grid)
+    const step = (from, by) => {
+      let i = from;
+      do i = (i + by + MENU.length) % MENU.length;
+      while (!MENU[i]);
+      return i;
+    };
     beep(880, 0.05, 2);
 
     const build = (c) => {
@@ -195,6 +202,7 @@ export default class HUD extends Phaser.Scene {
       menu.frame = this.add.graphics();
       c.add(menu.frame);
       menu.tiles = MENU.map((item, i) => {
+        if (!item) return null; // empty spot
         const x = px + pad + (i % 3) * (T + gap) + T / 2;
         const y = py + pad + Math.floor(i / 3) * (T + gap) + T / 2;
         const img = fit(this.add.image(x, y, item.texture, item.frame), T, T);
@@ -215,6 +223,7 @@ export default class HUD extends Phaser.Scene {
     const draw = () => {
       const u = unit(this);
       menu.tiles.forEach((img, i) => {
+        if (!img) return;
         this.tweens.killTweensOf(img);
         img.setScale(img.baseScale);
         if (i === menu.idx) {
@@ -227,7 +236,11 @@ export default class HUD extends Phaser.Scene {
       menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeCircle(sel.x, sel.y, s / 2);
       menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1).strokeCircle(sel.x, sel.y, s / 2 + 4 * u);
       const item = MENU[menu.idx];
-      menu.label.setText(item.id === 'home' ? (asleep ? 'Leave Home' : 'Enter Home') : item.label);
+      const labels = {
+        home: inside ? 'Leave House' : 'Enter House',
+        sleep: asleep ? 'Wake Up' : 'Sleep',
+      };
+      menu.label.setText(labels[item.id] ?? item.label);
     };
 
     const deny = () => {
@@ -252,9 +265,15 @@ export default class HUD extends Phaser.Scene {
         this.closeOverlay();
         return;
       }
-      if (a === 'left') menu.idx = (menu.idx + MENU.length - 1) % MENU.length;
-      if (a === 'right') menu.idx = (menu.idx + 1) % MENU.length;
-      if (a === 'jump') menu.idx = (menu.idx + 3) % MENU.length; // next row (wraps)
+      if (a === 'left') menu.idx = step(menu.idx, -1);
+      if (a === 'right') menu.idx = step(menu.idx, 1);
+      if (a === 'jump') {
+        // next row (wraps); if that spot is empty, the nearest icon in that row
+        const row = (Math.floor(menu.idx / 3) + 1) % Math.ceil(MENU.length / 3);
+        const col = menu.idx % 3;
+        const candidates = [col, 1, 0, 2].map((c) => row * 3 + c).filter((i) => MENU[i]);
+        if (candidates.length) menu.idx = candidates[0];
+      }
       beep(700, 0.03);
       draw();
     };

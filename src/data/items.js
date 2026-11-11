@@ -21,15 +21,18 @@ export const FOODS = [
   { key: 'item-food_3', name: 'Macaroni Salad', note: 'Big meal', hunger: 55, happy: 5 },
 ];
 
-// The menu, 3 per row, left to right, top to bottom.
+// The menu: a 3 x 3 grid, left to right, top to bottom. `null` = empty spot.
 // The icons are drawn in src/menuIcons.js.
 export const MENU = [
-  { id: 'stats',    label: 'Stats',      texture: 'tile-stats' },
-  { id: 'food',     label: 'Eat',        texture: 'tile-food' },
-  { id: 'shower',   label: 'Shower',     texture: 'tile-shower' },
-  { id: 'home',     label: 'Enter Home', texture: 'tile-home' },  // label switches to "Leave Home" inside
-  { id: 'gift',     label: 'Gift Catch', texture: 'tile-game' },
-  { id: 'settings', label: 'Settings',   texture: 'tile-settings' },
+  { id: 'stats',    label: 'Stats',       texture: 'tile-stats' },
+  { id: 'home',     label: 'Enter House', texture: 'tile-home' },   // "Leave House" when inside
+  { id: 'gift',     label: 'Gift Catch',  texture: 'tile-game' },
+  { id: 'food',     label: 'Eat',         texture: 'tile-food' },
+  { id: 'sleep',    label: 'Sleep',       texture: 'tile-sleep' },  // "Wake Up" while asleep
+  { id: 'shower',   label: 'Shower',      texture: 'tile-shower' },
+  null,
+  { id: 'settings', label: 'Settings',    texture: 'tile-settings' },
+  null,
 ];
 
 // Settings options (shown after choosing Settings)

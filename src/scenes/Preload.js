@@ -68,6 +68,8 @@ export default class Preload extends Phaser.Scene {
 
     // extra gift designs for Gift Catch: any that are missing are simply skipped
     GIFT_DESIGNS.forEach((key) => this.load.image(key, `assets/items/${key.replace('item-', '')}.png`));
+    // bedroom for sleeping: used automatically once backgrounds/bedroom.png is added
+    this.load.image('bg-bedroom', 'assets/backgrounds/bedroom.png');
     this.load.on('loaderror', (file) => console.warn(`Missing asset (skipped): ${file.src}`));
     ICONS.forEach((ic) => this.load.image(`icon-${ic}`, `assets/icon/${ic}.png`));
   }

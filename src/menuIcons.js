@@ -11,6 +11,7 @@ export const ICONS = {
   food:     { color: '#f9a26c', draw: drawForkKnife },
   shower:   { color: '#8ec5f7', draw: drawBathtub },
   home:     { color: '#fbbd7d', draw: drawHouse },
+  sleep:    { color: '#8fa8f0', draw: drawMoon },
   door:     { color: '#8fd58f', draw: drawDoor },
   game:     { color: '#e78ad8', draw: drawController },
   phone:    { color: '#f68bb6', draw: drawPhone },
@@ -164,6 +165,22 @@ function drawHouse(ctx, cut) {
     ctx.ellipse(64, 98, 17, 16, 0, Math.PI, 0);
     ctx.fill();
   });
+}
+
+function drawMoon(ctx, cut) {
+  // crescent moon
+  circle(ctx, 58, 66, 32);
+  cut(() => circle(ctx, 76, 54, 28));
+  // little "z z"
+  ctx.lineWidth = 6;
+  for (const [x, y, s] of [[80, 40, 16], [96, 64, 11]]) {
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + s, y);
+    ctx.lineTo(x, y + s);
+    ctx.lineTo(x + s, y + s);
+    ctx.stroke();
+  }
 }
 
 function drawDoor(ctx, cut) {

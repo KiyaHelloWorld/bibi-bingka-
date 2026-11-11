@@ -8,6 +8,7 @@ const DEFAULT_STATE = {
   hygiene: 80,
   happy: 80,
   asleep: false,
+  inside: false, // in the house (living room)
   sound: true,
   lastSeen: Date.now(),
 };

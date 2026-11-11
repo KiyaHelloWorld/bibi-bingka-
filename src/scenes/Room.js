@@ -233,7 +233,7 @@ export default class Room extends Phaser.Scene {
     if (a === 'settings' && !this.minigame.active) {
       if (this.menuAllowed && this.hudReady && !this.busy) {
         this.character.stopWalking();
-        this.hud.openMenu({ lock: this.menuLock, asleep: gameState.asleep });
+        this.hud.openMenu({ lock: this.menuLock, asleep: gameState.asleep, inside: gameState.inside });
       } else {
         beep(200, 0.05);
       }
@@ -242,9 +242,9 @@ export default class Room extends Phaser.Scene {
   }
 
   onMenu(id) {
-    const blockedWhileAsleep = ['food', 'shower', 'gift'];
+    const blockedWhileAsleep = ['food', 'shower', 'gift', 'home'];
     if (gameState.asleep && blockedWhileAsleep.includes(id)) {
-      this.hud.toast('Bibi is sleeping inside. Leave Home first!');
+      this.hud.toast('Bibi is sleeping. Wake them up first!');
       return;
     }
     switch (id) {
@@ -261,6 +261,9 @@ export default class Room extends Phaser.Scene {
         ]);
         break;
       case 'home':
+        this.setInside(!gameState.inside);
+        break;
+      case 'sleep':
         this.setAsleep(!gameState.asleep);
         break;
       case 'gift':
@@ -352,7 +355,22 @@ export default class Room extends Phaser.Scene {
     this.refreshMood();
   }
 
-  // Enter Home: Bibi goes inside (living room) and sleeps. Leave Home: wakes up, back to the yard.
+  // Enter House: Bibi goes inside (living room). Leave House: back out to the yard.
+  async setInside(inside) {
+    this.busy = true;
+    this.character.stopWalking();
+    beep(inside ? 660 : 880, 0.05, 3);
+    await this.fade(250, true);
+    gameState.inside = inside;
+    save();
+    this.updateTimeOfDay();
+    this.character.setFacing('front');
+    await this.fade(250, false);
+    this.busy = false;
+    this.bubble.show(inside ? BUBBLES.inside : BUBBLES.outside, 2000);
+  }
+
+  // Sleep / Wake Up. (Sleeps in the bedroom once bedroom.png is added; until then, where Bibi is.)
   setAsleep(asleep) {
     gameState.asleep = asleep;
     this.cameras.main.flash(250, 255, 255, 255);
@@ -450,7 +468,8 @@ export default class Room extends Phaser.Scene {
     this.wasNight = night;
 
     let bgKey;
-    if (gameState.asleep) bgKey = 'bg-living_room'; // inside the house
+    if (gameState.asleep && this.textures.exists('bg-bedroom')) bgKey = 'bg-bedroom'; // once bedroom.png is added
+    else if (gameState.inside) bgKey = 'bg-living_room';
     else if (night) bgKey = 'bg-night';
     else if (hour < DAYTIME) bgKey = 'bg-morning_1';
     else bgKey = 'bg-morning_2';
