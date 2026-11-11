@@ -12,9 +12,12 @@ const BOUNDS = {
 // The baby has its own faces (heads/baby/). Facing front it uses baby_sad_1/2,
 // which already include the body. Facing sideways, a small baby face sits in the kid body.
 // Moods with no baby art (shower, sleep, sneeze, angry) borrow the big heads/ faces.
+// Eating uses heads/eating.png (kid/adult) and heads/baby/baby_eating.png (baby).
 const BABY_FACES = {
   idle: { front: 'baby-front_idle', left: 'baby-left_idle', right: 'baby-right_idle' },
   sad: { front: 'baby-front_sad', left: 'baby-left_sad', right: 'baby-right_sad' },
+  // baby_eating.png is a small face, so even facing front it sits in the kid body
+  eating: { front: 'baby-eating', left: 'baby-eating', right: 'baby-eating', inBody: true },
 };
 
 export default class Character extends Phaser.GameObjects.Container {
@@ -115,8 +118,9 @@ export default class Character extends Phaser.GameObjects.Container {
 
     const baby = this.stage === 'baby' && BABY_FACES[this.mood];
     if (baby) {
-      const key = BABY_FACES[this.mood][this.facing];
-      if (this.facing === 'front') {
+      const faces = BABY_FACES[this.mood];
+      const key = faces[this.facing];
+      if (this.facing === 'front' && !faces.inBody) {
         this.fullSprite.setVisible(true);
         this.bodySprite.setVisible(false);
         this.headSprite.setVisible(false);
