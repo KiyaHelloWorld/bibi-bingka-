@@ -20,7 +20,11 @@ export const TUTORIAL = {
   intro2: 'Your mission is to take care of them. Keep Bibi fed, clean, and happy so they grow up big and strong!',
   move: 'Press A and D to walk, and W to jump. Try all three!',
   moveDone: 'Nice moves!',
-  needs: "These are Bibi's needs: Hunger, Hygiene, and Happy. Don't let them run out!",
+  needs: "Bibi has three needs: Hunger, Hygiene, and Happy. Let's check them!",
+  pressE_stats: 'Press E to open the menu.',
+  menuStats: 'The Stats icon is highlighted. Press Q to open it.',
+  closeStats: "Here are Bibi's needs. Press Q or E to close it.",
+  statsDone: "Check Stats any time. Don't let the needs run out!",
 
   hungry: 'Oh, look at that! Bibi is hungry!',
   pressE_food: 'Feed them by pressing E.',
@@ -35,6 +39,7 @@ export const TUTORIAL = {
   showered: 'Squeaky clean! Bibi feels so much better.',
 
   menuHelp: 'Press E any time to open the menu. A and D move, W jumps a row, Q chooses, and E closes it.',
+  giftCatch: 'If Bibi gets bored, pick Gift Catch in the menu and play together!',
   bye: 'That is everything. Take good care of Bibi!',
 };
 
@@ -53,3 +58,29 @@ export const BUBBLES = {
   grew: 'I grew!',
   sleepy: 'Zzz... so sleepy...',
 };
+
+// ---------- Gift Catch minigame ----------
+export const MINIGAME = {
+  start: 'Catch all the gifts! A/D to move, W to jump. E to stop.',
+  win: 'You caught every gift!',
+  timeUp: 'Time is up!',
+  quit: 'Game stopped.',
+  winBubble: 'Best Christmas ever!',
+  someBubble: 'That was fun!',
+};
+
+// ---------- random things Bibi says when idle ----------
+export const IDLE_LINES = [
+  'Have an Animo Christmas!',
+  'Merry Christmas!',
+  'Animo La Salle!',
+  'I love bibingka!',
+  'Is it Noche Buena yet?',
+  "You're my best friend!",
+  'Can we play Gift Catch?',
+  'Let us go caroling!',
+  'Simbang Gabi tonight?',
+  'Look at the tree! So pretty!',
+];
+export const IDLE_CHAT_MIN_S = 15;   // Bibi waits this long (at least) between idle lines
+export const IDLE_CHAT_MAX_S = 30;   // ...and at most this long

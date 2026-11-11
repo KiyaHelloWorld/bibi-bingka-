@@ -9,7 +9,6 @@ const DEFAULT_STATE = {
   happy: 80,
   asleep: false,
   sound: true,
-  lastGift: 0,
   lastSeen: Date.now(),
 };
 

@@ -24,7 +24,7 @@ export const MENU = [
   { id: 'shower',   label: 'Shower',     texture: 'tile-shower' },
   { id: 'home',     label: 'Bedtime',    texture: 'icon-house_icon', frame: 'crop' },
   { id: 'door',     label: 'Go Outside', texture: 'tile-door' },
-  { id: 'gift',     label: 'Gifts',      texture: 'tile-gift' },
+  { id: 'gift',     label: 'Gift Catch', texture: 'tile-gift' },
   { id: 'phone',    label: 'Phone',      texture: 'tile-phone' },
   { id: 'settings', label: 'Settings',   texture: 'tile-settings' },
   { id: 'back',     label: 'Back',       texture: 'tile-back' },

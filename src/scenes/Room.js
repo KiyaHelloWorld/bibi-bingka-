@@ -2,11 +2,12 @@ import Phaser from 'phaser';
 import Character from '../objects/Character.js';
 import SpeechBubble from '../objects/SpeechBubble.js';
 import Tutorial from '../objects/Tutorial.js';
+import GiftCatch from '../objects/GiftCatch.js';
 import { controls } from '../systems/controls.js';
 import { beep } from '../systems/sound.js';
 import { decay, moodFor, clamp, NEEDS } from '../systems/needs.js';
 import { gameState, save, resetSave } from '../gameState.js';
-import { BUBBLES } from '../data/dialogue.js';
+import { BUBBLES, IDLE_LINES, IDLE_CHAT_MIN_S, IDLE_CHAT_MAX_S } from '../data/dialogue.js';
 import { cover, fit, unit } from '../ui.js';
 import {
   ASSET_WIDTH,
@@ -23,7 +24,6 @@ import {
   NIGHTTIME,
   LOW_NEED,
   MAX_AWAY_MINUTES,
-  GIFT_COOLDOWN_MS,
 } from '../constants.js';
 
 const STAGE_NAMES = { baby: 'Baby', kid: 'Kid', adult: 'Adult' };
@@ -46,20 +46,13 @@ export default class Room extends Phaser.Scene {
     this.bubble = new SpeechBubble(this, this.character);
     this.stink = [0, 1, 2].map(() => this.add.image(0, 0, 'fx-stink').setDepth(11).setVisible(false));
 
-    this.busy = false;          // eating / showering / opening a gift
+    this.busy = false;          // eating / showering
+    this.minigame = new GiftCatch(this);
+    this.lastInputAt = Date.now();
     this.menuAllowed = true;    // the tutorial turns the menu off and on
     this.menuLock = null;       // the tutorial highlights one menu item
     this.hudReady = false;
     this.signals = new Phaser.Events.EventEmitter();
-
-    // debug text, only shown while running `npm run dev` (hidden in the real build)
-    this.debugText = this.add.text(10, 0, '', {
-      fontFamily: 'monospace',
-      fontSize: '12px',
-      color: '#ffffff',
-      backgroundColor: '#00000088',
-      padding: { x: 6, y: 4 },
-    }).setDepth(200).setVisible(import.meta.env.DEV);
 
     // fit everything to the screen, and again whenever the window resizes
     this.layout();
@@ -81,7 +74,7 @@ export default class Room extends Phaser.Scene {
       delay: WANDER_DELAY,
       loop: true,
       callback: () => {
-        if (!this.canMove() || this.character.isPlayerMoving) return;
+        if (!this.canMove() || this.character.isPlayerMoving || this.minigame.active) return;
         if (Math.random() < 0.4) return; // sometimes just stand there
         const pad = this.character.edge();
         const x = Phaser.Math.Between(pad, this.scale.width - pad);
@@ -100,6 +93,7 @@ export default class Room extends Phaser.Scene {
   start() {
     this.hudReady = true;
     this.hud.events.on('opened', (name) => this.signal(name));
+    this.hud.events.on('closed', (name) => this.signal(`closed:${name}`));
     this.hud.events.on('choose', (id) => this.onMenu(id));
     this.hud.events.on('food', (food) => this.feed(food));
 
@@ -117,26 +111,24 @@ export default class Room extends Phaser.Scene {
       this.startLife();
     }
     this.refreshMood();
-    this.updateDebugText();
   }
 
   // needs go down over time once the tutorial is done
   startLife() {
-    this.hud.setStatsVisible(true);
-    this.hud.setNeeds(gameState);
     this.warned = {};
+    this.scheduleIdleChat();
     this.time.addEvent({
       delay: 1000,
       loop: true,
       callback: () => {
         decay(gameState, 1 / 60);
-        this.hud.setNeeds(gameState);
         if (!this.busy) this.refreshMood();
+        if (this.minigame.active) return; // no chatter while playing
+        this.idleChat();
         this.nag('hunger', gameState.hunger < LOW_NEED, BUBBLES.hungry);
         this.nag('hygiene', gameState.hygiene < LOW_NEED, BUBBLES.stinky);
         this.nag('happy', gameState.happy < LOW_NEED, BUBBLES.bored);
         if (gameState.hygiene < LOW_NEED && !this.busy && !gameState.asleep && Math.random() < 0.03) this.sneeze();
-        this.updateDebugText();
       },
     });
     this.time.addEvent({ delay: 10000, loop: true, callback: () => save() });
@@ -149,6 +141,29 @@ export default class Room extends Phaser.Scene {
       beep(330, 0.08, 2);
     }
     if (!low) this.warned[key] = false;
+  }
+
+  // ---------- idle chatter ----------
+
+  scheduleIdleChat() {
+    this.nextChatAt = Date.now() + Phaser.Math.Between(IDLE_CHAT_MIN_S, IDLE_CHAT_MAX_S) * 1000;
+  }
+
+  // Bibi says something random when nothing is going on
+  idleChat() {
+    const idle = !this.busy && !gameState.asleep && !this.hud.isOpen() && !this.hud.narration.visible
+      && !this.bubble.visible && !this.character.isPlayerMoving && NEEDS.every((k) => gameState[k] >= LOW_NEED);
+    if (!idle) return;
+    if (Date.now() - this.lastInputAt < 5000) return; // wait until the player stops pressing buttons
+    if (Date.now() < this.nextChatAt) return;
+
+    let line;
+    do line = Phaser.Utils.Array.GetRandom(IDLE_LINES);
+    while (line === this.lastChat && IDLE_LINES.length > 1);
+    this.lastChat = line;
+    this.bubble.show(line, 3200);
+    beep(880, 0.04, 2);
+    this.scheduleIdleChat();
   }
 
   // ---------- events for the tutorial ----------
@@ -185,7 +200,14 @@ export default class Room extends Phaser.Scene {
   }
 
   onAction(a) {
+    this.lastInputAt = Date.now();
     if (this.hudReady && this.hud.narration.handle(a)) return true;
+
+    // during Gift Catch, E stops the game; everything else is moving and jumping
+    if (this.minigame.active && a === 'settings') {
+      this.minigame.end('quit');
+      return true;
+    }
 
     if (a === 'jump') {
       if (this.canMove() && this.character.jump()) {
@@ -195,7 +217,7 @@ export default class Room extends Phaser.Scene {
       this.signal('jump');
     }
     if (a === 'left' || a === 'right') this.signal(a);
-    if (a === 'settings') {
+    if (a === 'settings' && !this.minigame.active) {
       if (this.menuAllowed && this.hudReady && !this.busy) {
         this.character.stopWalking();
         this.hud.openMenu({ lock: this.menuLock, asleep: gameState.asleep });
@@ -220,11 +242,8 @@ export default class Room extends Phaser.Scene {
         this.shower();
         break;
       case 'stats':
-        this.hud.openStats([
+        this.hud.openStats(gameState, [
           ['Stage', STAGE_NAMES[gameState.stage]],
-          ['Hunger', `${Math.round(gameState.hunger)}%`],
-          ['Hygiene', `${Math.round(gameState.hygiene)}%`],
-          ['Happy', `${Math.round(gameState.happy)}%`],
           ['Growing', STAGES[gameState.stage].careToGrow ? `${gameState.care}/${STAGES[gameState.stage].careToGrow}` : 'All grown up!'],
         ]);
         break;
@@ -232,7 +251,7 @@ export default class Room extends Phaser.Scene {
         this.setAsleep(!gameState.asleep);
         break;
       case 'gift':
-        this.openGift();
+        this.minigame.start();
         break;
       case 'settings':
         gameState.sound = !gameState.sound;
@@ -276,8 +295,6 @@ export default class Room extends Phaser.Scene {
 
     gameState.hunger = clamp(gameState.hunger + food.hunger);
     gameState.happy = clamp(gameState.happy + food.happy);
-    this.hud.setNeeds(gameState);
-    this.hud.flash('hunger');
     this.burst('fx-heart', 5);
     c.setFacing('front');
     this.busy = false;
@@ -330,8 +347,6 @@ export default class Room extends Phaser.Scene {
     c.setFacing('front');
     gameState.hygiene = 100;
     gameState.happy = clamp(gameState.happy + 5);
-    this.hud.setNeeds(gameState);
-    this.hud.flash('hygiene');
     this.burst('fx-sparkle', 7);
     beep(1320, 0.06, 3);
     this.bubble.show(BUBBLES.clean, 2200);
@@ -341,39 +356,12 @@ export default class Room extends Phaser.Scene {
     this.signal('showered');
   }
 
-  async openGift() {
-    const wait = Math.ceil((GIFT_COOLDOWN_MS - (Date.now() - gameState.lastGift)) / 1000);
-    if (wait > 0) {
-      this.hud.toast(`Next gift in ${wait}s`);
-      return;
-    }
-    this.busy = true;
-    gameState.lastGift = Date.now();
-    const c = this.character;
-    c.stopWalking();
-    c.setFacing('front');
-    const s = c.scaleX;
-    const size = 900 * s;
-    const onLeft = c.x > this.scale.width / 2;
-    const gift = fit(this.add.image(c.x + (onLeft ? -1 : 1) * (750 * s + size / 2), c.getBottomY() - size / 2, 'item-gift', 'crop'), size, size).setDepth(12);
-    const base = gift.scale;
-    gift.setScale(0);
-    await this.tween({ targets: gift, scale: base, duration: 400, ease: 'Back.easeOut' });
-    for (let i = 0; i < 3; i++) {
-      beep(600 + i * 120, 0.06);
-      await this.tween({ targets: gift, angle: { from: -10, to: 10 }, duration: 90, yoyo: true });
-    }
-    gift.setAngle(0);
-    await this.tween({ targets: gift, scale: base * 1.4, alpha: 0, duration: 300 });
-    gift.destroy();
-    this.burst('fx-heart', 7);
-    this.bubble.show(BUBBLES.gift, 2400);
-    gameState.happy = clamp(gameState.happy + 25);
-    this.hud.setNeeds(gameState);
-    this.hud.flash('happy');
-    this.busy = false;
+  // called by GiftCatch when the game is over
+  endMinigame(caught) {
     this.refreshMood();
-    this.giveCare(1);
+    if (caught > 0) this.giveCare(1);
+    save();
+    this.scheduleIdleChat();
   }
 
   async sneeze() {
@@ -401,6 +389,16 @@ export default class Room extends Phaser.Scene {
     this.character.setMood(moodFor(gameState));
     const stinky = gameState.hygiene < 30;
     this.stink.forEach((s) => s.setVisible(stinky));
+  }
+
+  // little particles at any spot (used by Gift Catch)
+  burstAt(x, y, texture, n) {
+    const u = unit(this);
+    for (let i = 0; i < n; i++) {
+      const p = this.add.image(x + Phaser.Math.Between(-30, 30) * u, y + Phaser.Math.Between(-20, 20) * u, texture)
+        .setScale(5 * u).setDepth(15);
+      this.tweens.add({ targets: p, y: p.y - 50 * u, alpha: 0, duration: 700, delay: i * 80, onComplete: () => p.destroy() });
+    }
   }
 
   burst(texture, n) {
@@ -434,15 +432,6 @@ export default class Room extends Phaser.Scene {
     }
 
     save();
-    this.updateDebugText();
-  }
-
-  updateDebugText() {
-    const stageInfo = STAGES[gameState.stage];
-    const goal = stageInfo.careToGrow ?? 'max';
-    const needs = NEEDS.map((k) => `${k}:${Math.round(gameState[k])}`).join(' ');
-    this.debugText.setText(`stage: ${gameState.stage}  care: ${gameState.care}/${goal}  ${needs}  (R = reset)`);
-    this.debugText.setY(this.scale.height - this.debugText.height);
   }
 
   // ---------- screen fitting ----------
@@ -462,6 +451,7 @@ export default class Room extends Phaser.Scene {
     const pad = this.character.edge();
     this.character.x = Phaser.Math.Clamp(this.character.x, pad, width - pad);
     this.stink.forEach((s) => s.setScale(6 * unit(this)));
+    this.minigame?.layout();
   }
 
   // ---------- time of day ----------
@@ -500,6 +490,7 @@ export default class Room extends Phaser.Scene {
 
     c.y = this.groundY - c.jumpState.h * this.scale.height * JUMP_HEIGHT;
     this.bubble.update();
+    this.minigame.update();
 
     // stink lines rise off Bibi when dirty
     if (this.stink[0].visible) {

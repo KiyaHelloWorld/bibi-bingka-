@@ -32,15 +32,21 @@ export default class Tutorial {
     room.bubble.show(BUBBLES.wheee, 1500);
     await say(T.moveDone);
 
-    // ----- needs -----
-    hud.setStatsVisible(true);
-    hud.setNeeds(gameState);
+    // ----- needs: the Stats button -----
     await say(T.needs);
+    room.menuLock = 'stats';
+    room.menuAllowed = true;
+    say(T.pressE_stats, { advance: 'none' });
+    await room.waitFor('menu');
+    say(T.menuStats, { advance: 'none' });
+    await room.waitFor('stats');
+    say(T.closeStats, { advance: 'none' });
+    await room.waitFor('closed:stats');
+    room.menuAllowed = false;
+    await say(T.statsDone);
 
     // ----- hunger -----
     gameState.hunger = 12;
-    hud.setNeeds(gameState);
-    hud.flash('hunger');
     room.refreshMood();
     room.bubble.show(BUBBLES.hungry, 3000);
     beep(330, 0.08, 2);
@@ -59,8 +65,6 @@ export default class Tutorial {
 
     // ----- shower -----
     gameState.hygiene = 10;
-    hud.setNeeds(gameState);
-    hud.flash('hygiene');
     room.refreshMood();
     await room.sneeze();
     room.bubble.show(BUBBLES.stinky, 3500);
@@ -78,6 +82,7 @@ export default class Tutorial {
     // ----- wrap up -----
     room.menuLock = null;
     await say(T.menuHelp);
+    await say(T.giftCatch);
     await say(T.bye);
     hud.narration.hide();
     character && room.bubble.show('Let\'s be best friends!', 3000);

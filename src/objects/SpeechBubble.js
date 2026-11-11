@@ -10,6 +10,10 @@ export default class SpeechBubble {
     this.hide();
   }
 
+  get visible() {
+    return this.t.visible;
+  }
+
   show(text, ms = 2600) {
     this.t.setStyle(textStyle(this.scene, 18));
     this.t.setText(text);

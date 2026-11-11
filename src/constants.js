@@ -41,7 +41,6 @@ export const EDGE_PADDING = 80;    // how close to the edge it can go
 export const NEEDS_DECAY_PER_MIN = { hunger: 2, hygiene: 1.5, happy: 1.8 };
 export const LOW_NEED = 25;              // below this Bibi gets sad and complains
 export const MAX_AWAY_MINUTES = 180;     // most "time away" counted when the game is reopened
-export const GIFT_COOLDOWN_MS = 120000;  // one gift every 2 minutes
 
 // hatching
 export const HATCH_PRESSES = 12;

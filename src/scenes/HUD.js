@@ -6,9 +6,11 @@ import { beep } from '../systems/sound.js';
 import { MENU, FOODS } from '../data/items.js';
 import { COLORS, textStyle, unit, fit } from '../ui.js';
 
-// Runs on top of the Room: need meters, narration, the 3x3 menu, food picker, stats card, toasts.
+// Runs on top of the Room: narration, the 3x3 menu, food picker, stats card,
+// the Gift Catch counter, and toasts. Bibi's needs are only shown in the Stats card.
 // Tells the Room what was chosen through events:
 //   'opened' (name)  'menu' | 'food' | 'stats'
+//   'closed' (name)  an overlay was closed
 //   'choose' (id)    a menu item was picked
 //   'food'   (food)  a food was picked
 export default class HUD extends Phaser.Scene {
@@ -17,13 +19,9 @@ export default class HUD extends Phaser.Scene {
   }
 
   create() {
-    this.bars = {
-      hunger: new StatBar(this, 'Hunger', 'icon-food_icon', 'crop'),
-      hygiene: new StatBar(this, 'Hygiene', 'tile-shower'),
-      happy: new StatBar(this, 'Happy', 'tile-heart'),
-    };
-    this.statsVisible = false;
     this.overlay = null;
+    this.counterBox = this.add.graphics().setDepth(450).setVisible(false);
+    this.counterText = this.add.text(0, 0, '', textStyle(this, 20)).setOrigin(0.5).setDepth(451).setVisible(false);
     this.narration = new Narration(this, { position: 'top', depth: 400 });
     this.toastText = this.add.text(0, 0, '', textStyle(this, 16, {
       color: COLORS.creamHex,
@@ -37,36 +35,34 @@ export default class HUD extends Phaser.Scene {
   }
 
   layout() {
-    const u = unit(this);
-    const m = 10 * u;
-    Object.values(this.bars).forEach((bar, i) => {
-      bar.setVisible(this.statsVisible);
-      bar.place(m + i * 246 * u, m);
-    });
-    this.narration.top = this.statsVisible ? 40 * u : 0;
     if (this.narration.visible) this.narration.layout();
     if (this.overlay) this.overlay.rebuild();
+    if (this.counterText.visible) this.showCounter(this.counterText.text);
   }
 
-  // ---------- meters ----------
+  // ---------- Gift Catch counter ----------
 
-  setStatsVisible(v) {
-    this.statsVisible = v;
-    this.layout();
+  showCounter(text) {
+    const u = unit(this);
+    const t = this.counterText;
+    t.setStyle(textStyle(this, 20)).setText(text).setPosition(this.scale.width / 2, 26 * u).setVisible(true);
+    const w = t.width + 36 * u;
+    const h = t.height + 14 * u;
+    this.counterBox.clear().setVisible(true);
+    this.counterBox.fillStyle(0x000000, 0.25).fillRoundedRect(t.x - w / 2, t.y - h / 2 + 4 * u, w, h, h / 2);
+    this.counterBox.fillStyle(COLORS.cream, 1).fillRoundedRect(t.x - w / 2, t.y - h / 2, w, h, h / 2);
+    this.counterBox.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1).strokeRoundedRect(t.x - w / 2, t.y - h / 2, w, h, h / 2);
   }
 
-  setNeeds(state) {
-    for (const [k, bar] of Object.entries(this.bars)) bar.setValue(state[k]);
-  }
-
-  flash(key) {
-    this.bars[key]?.flash();
+  hideCounter() {
+    this.counterText.setVisible(false);
+    this.counterBox.setVisible(false);
   }
 
   toast(text, ms = 1800) {
     const u = unit(this);
     this.toastText.setStyle(textStyle(this, 16, { color: COLORS.creamHex, backgroundColor: '#4b2e14', padding: { x: 14, y: 6 } }));
-    this.toastText.setText(text).setPosition(this.scale.width / 2, (this.statsVisible ? 52 : 14) * u).setVisible(true);
+    this.toastText.setText(text).setPosition(this.scale.width / 2, (this.counterText.visible ? 52 : 14) * u).setVisible(true);
     if (this.toastTimer) this.toastTimer.remove(false);
     this.toastTimer = this.time.delayedCall(ms, () => this.toastText.setVisible(false));
   }
@@ -80,6 +76,7 @@ export default class HUD extends Phaser.Scene {
   openOverlay(build, onAction, name) {
     this.closeOverlay();
     const overlay = {
+      name,
       container: null,
       rebuild: () => {
         overlay.container?.destroy();
@@ -98,16 +95,18 @@ export default class HUD extends Phaser.Scene {
 
   closeOverlay() {
     if (!this.overlay) return;
+    const { name } = this.overlay;
     this.overlay.off();
     this.overlay.container.destroy();
     this.overlay = null;
+    this.events.emit('closed', name);
   }
 
   // area below the narration box (so tutorial text stays readable)
   freeArea() {
     const { height } = this.scale;
     const u = unit(this);
-    const top = Math.max(this.narration.bottom, this.statsVisible ? 44 * u : 0) + 8 * u;
+    const top = this.narration.bottom + 8 * u;
     return { top, height: height - top - 8 * u };
   }
 
@@ -303,29 +302,45 @@ export default class HUD extends Phaser.Scene {
   }
 
   // ---------- stats card ----------
+  // Bibi's needs as bars, plus a few extra lines ([label, value]).
 
-  openStats(lines) {
+  openStats(state, lines = []) {
     const build = (c) => {
       const { width } = this.scale;
       const u = unit(this);
       const area = this.freeArea();
-      const w = 340 * u;
-      const lh = 30 * u;
-      const h = 60 * u + lines.length * lh + 30 * u;
+      const w = 300 * u;
+      const lh = 26 * u;
+      const barH = 40 * u;
+      const h = 54 * u + 3 * barH + lines.length * lh + 16 * u;
       const x = width / 2 - w / 2;
-      const y = area.top + Math.max(0, (area.height - h) / 2);
+      const y = area.top + Math.max(0, (area.height - h - 26 * u) / 2);
       this.backdrop(c);
       const g = this.add.graphics();
+      g.fillStyle(0x000000, 0.25).fillRoundedRect(x, y + 6 * u, w, h, 18 * u);
       g.fillStyle(COLORS.cream, 1).fillRoundedRect(x, y, w, h, 18 * u);
       g.lineStyle(Math.max(2, 4 * u), COLORS.brown, 1).strokeRoundedRect(x, y, w, h, 18 * u);
       c.add(g);
-      c.add(this.add.text(width / 2, y + 16 * u, 'Bibi', textStyle(this, 26)).setOrigin(0.5, 0));
-      lines.forEach(([k, v], i) => {
-        const ly = y + 60 * u + i * lh;
-        c.add(this.add.text(x + 24 * u, ly, k, textStyle(this, 17)));
-        c.add(this.add.text(x + w - 24 * u, ly, v, textStyle(this, 17)).setOrigin(1, 0));
+      c.add(this.add.text(width / 2, y + 12 * u, "Bibi's Stats", textStyle(this, 24)).setOrigin(0.5, 0));
+
+      const bars = [
+        ['hunger', 'Hunger', 'icon-food_icon', 'crop'],
+        ['hygiene', 'Hygiene', 'tile-shower'],
+        ['happy', 'Happy', 'tile-heart'],
+      ];
+      bars.forEach(([key, label, tex, frame], i) => {
+        const bar = new StatBar(this, label, tex, frame);
+        bar.parts.forEach((p) => c.add(p));
+        bar.place(x + (w - 236 * u) / 2, y + 50 * u + i * barH);
+        bar.setValue(state[key]);
       });
-      this.hintText(c, width / 2, y + h + 8 * u, 'Q or E Close');
+
+      lines.forEach(([k, v], i) => {
+        const ly = y + 54 * u + 3 * barH + i * lh;
+        c.add(this.add.text(x + 24 * u, ly, k, textStyle(this, 16)));
+        c.add(this.add.text(x + w - 24 * u, ly, v, textStyle(this, 16)).setOrigin(1, 0));
+      });
+      this.hintText(c, width / 2, y + h + 10 * u, 'Q or E Close');
     };
     const onAction = (a) => {
       if (a === 'select' || a === 'settings') {
