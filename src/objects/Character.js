@@ -118,14 +118,23 @@ export default class Character extends Phaser.GameObjects.Container {
     if (sprite.anims.currentAnim?.key !== key || !sprite.anims.isPlaying) sprite.play(key);
   }
 
+  // the baby's own faces for the current mood (null = borrow the big heads/ faces)
+  babyFaces() {
+    if (this.mood === 'shower' && this.scene.anims.exists('baby-shower')) {
+      const wholeBody = !!this.scene.registry.get('babyShowerWholeBody');
+      return { front: 'baby-shower', left: 'baby-shower', right: 'baby-shower', inBody: !wholeBody, wholeBody };
+    }
+    return BABY_FACES[this.mood] ?? null;
+  }
+
   updateHead() {
     if (this.stage === 'egg') return;
 
-    const baby = this.stage === 'baby' && BABY_FACES[this.mood];
+    const baby = this.stage === 'baby' && this.babyFaces();
     if (baby) {
-      const faces = BABY_FACES[this.mood];
+      const faces = this.babyFaces();
       const key = faces[this.facing];
-      if (this.facing === 'front' && !faces.inBody) {
+      if ((this.facing === 'front' || faces.wholeBody) && !faces.inBody) {
         this.fullSprite.setVisible(true);
         this.bodySprite.setVisible(false);
         this.headSprite.setVisible(false);
