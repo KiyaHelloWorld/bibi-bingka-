@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-// Round pastel menu icons, drawn in code (in the style of the UI mockup).
+// Pastel rounded-square menu icons, drawn in code (in the style of the UI mockup).
 // Each icon becomes a texture called `tile-<name>`, e.g. tile-food, tile-game.
 // To change a color, edit ICONS below. To change a symbol, edit its draw function.
 
@@ -35,25 +35,26 @@ export function makeMenuIcons(scene) {
 function iconCanvas(color, draw) {
   const c = canvas();
   const ctx = c.getContext('2d');
-  const r = S / 2 - 3;
+  const m = 4;          // margin around the square
+  const corner = 26;    // corner roundness (0 = sharp square)
 
   // darker bottom edge (gives the button some depth)
-  circle(ctx, S / 2, S / 2, r, shade(color, -28));
+  ctx.fillStyle = shade(color, -28);
+  roundRect(ctx, m, m, S - m * 2, S - m * 2, corner);
 
   // main face, a little higher, with a soft light from the top-left
-  const grad = ctx.createRadialGradient(S * 0.36, S * 0.3, 4, S / 2, S / 2, r);
+  const grad = ctx.createRadialGradient(S * 0.3, S * 0.25, 4, S / 2, S / 2, S * 0.75);
   grad.addColorStop(0, shade(color, 34));
-  grad.addColorStop(0.55, color);
+  grad.addColorStop(0.5, color);
   grad.addColorStop(1, shade(color, -6));
-  circle(ctx, S / 2, S / 2 - 3, r - 3, grad);
+  ctx.fillStyle = grad;
+  roundRect(ctx, m + 2, m, S - m * 2 - 4, S - m * 2 - 6, corner - 2);
 
-  // glossy highlight
+  // glossy highlight along the top
   ctx.save();
-  ctx.globalAlpha = 0.28;
+  ctx.globalAlpha = 0.25;
   ctx.fillStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.ellipse(S * 0.38, S * 0.24, 24, 11, -0.55, 0, Math.PI * 2);
-  ctx.fill();
+  roundRect(ctx, m + 14, m + 7, S - m * 2 - 28, 16, 8);
   ctx.restore();
 
   // the white symbol, with a soft shadow under it

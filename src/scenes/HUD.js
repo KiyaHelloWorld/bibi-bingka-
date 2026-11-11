@@ -233,8 +233,9 @@ export default class HUD extends Phaser.Scene {
       const sel = menu.tiles[menu.idx];
       const s = menu.T * 1.32;
       menu.frame.clear();
-      menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeCircle(sel.x, sel.y, s / 2);
-      menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1).strokeCircle(sel.x, sel.y, s / 2 + 4 * u);
+      menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeRoundedRect(sel.x - s / 2, sel.y - s / 2, s, s, s * 0.24);
+      menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1)
+        .strokeRoundedRect(sel.x - s / 2 - 4 * u, sel.y - s / 2 - 4 * u, s + 8 * u, s + 8 * u, s * 0.24 + 4 * u);
       const item = MENU[menu.idx];
       const labels = {
         home: inside ? 'Leave House' : 'Enter House',
