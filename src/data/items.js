@@ -10,6 +10,10 @@ export const CROPS = {
   'icon-house_icon': [1996, 1631, 514, 547],
 };
 
+// Gift designs used in Gift Catch (files in public/assets/items/).
+// Add more here, e.g. 'item-gift_3'. Files that don't exist yet are skipped.
+export const GIFT_DESIGNS = ['item-gift', 'item-gift_2'];
+
 export const FOODS = [
   { key: 'item-food_1', name: 'Bibingka', note: 'Warm and filling', hunger: 40, happy: 5 },
   { key: 'item-food_2', name: 'Lechon', note: 'Hearty meal', hunger: 25, happy: 10 },
@@ -24,7 +28,7 @@ export const MENU = [
   { id: 'shower',   label: 'Shower',     texture: 'tile-shower' },
   { id: 'home',     label: 'Bedtime',    texture: 'icon-house_icon', frame: 'crop' },
   { id: 'door',     label: 'Go Outside', texture: 'tile-door' },
-  { id: 'gift',     label: 'Gifts',      texture: 'tile-gift' },
+  { id: 'gift',     label: 'Gift Catch', texture: 'tile-gift' },
   { id: 'phone',    label: 'Phone',      texture: 'tile-phone' },
   { id: 'settings', label: 'Settings',   texture: 'tile-settings' },
   { id: 'back',     label: 'Back',       texture: 'tile-back' },
