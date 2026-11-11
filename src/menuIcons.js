@@ -8,7 +8,7 @@ const S = 128; // texture size in pixels (drawn smooth, then scaled to fit the m
 
 export const ICONS = {
   stats:    { color: '#f7888b', draw: drawGauge },
-  food:     { color: '#f9a26c', draw: drawForkKnife },
+  food:     { color: '#7fcf8a', draw: drawForkKnife },
   shower:   { color: '#8ec5f7', draw: drawBathtub },
   home:     { color: '#fbbd7d', draw: drawHouse },
   sleep:    { color: '#8fa8f0', draw: drawMoon },
