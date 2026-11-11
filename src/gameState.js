@@ -4,7 +4,13 @@ const DEFAULT_STATE = {
   stage: 'egg',
   care: 0,
   tutorialDone: false,
-  tutorialStep: 0,
+  hunger: 80,
+  hygiene: 80,
+  happy: 80,
+  asleep: false,
+  sound: true,
+  lastGift: 0,
+  lastSeen: Date.now(),
 };
 
 function load() {
@@ -19,6 +25,7 @@ function load() {
 export const gameState = load();
 
 export function save() {
+  gameState.lastSeen = Date.now();
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
   } catch {

@@ -1,1 +1,55 @@
-dialogue.js
+// ---------- opening story (any button moves it along) ----------
+export const STORY = [
+  { bg: 'night', text: 'Christmas Eve. Midnight. The whole town is asleep.', fx: 'twinkle' },
+  { bg: 'night', text: 'Then the sky tears open. A burning star falls, straight toward your yard.', fx: 'meteor' },
+  { bg: 'night', text: 'BOOM!', fx: 'boom' },
+  { bg: 'night', text: 'Silence. Out by the old tree, something is glowing.', fx: 'glow' },
+  { bg: 'morning_1', text: 'At first light, you run outside, heart pounding.' },
+  { bg: 'morning_2', text: 'Under the Christmas tree sits an egg. Warm. Humming. Alive.', egg: true },
+  { bg: 'morning_2', text: 'It has been waiting for you.' },
+];
+
+export const HATCH = {
+  start: 'The egg is shaking! Press any button again and again to help it hatch!',
+  done: 'Bibi has hatched!',
+};
+
+// ---------- tutorial ----------
+export const TUTORIAL = {
+  intro1: 'This is Bibi, your baby Tomodachi!',
+  intro2: 'Your mission is to take care of them. Keep Bibi fed, clean, and happy so they grow up big and strong!',
+  move: 'Press A and D to walk, and W to jump. Try all three!',
+  moveDone: 'Nice moves!',
+  needs: "These are Bibi's needs: Hunger, Hygiene, and Happy. Don't let them run out!",
+
+  hungry: 'Oh, look at that! Bibi is hungry!',
+  pressE_food: 'Feed them by pressing E.',
+  menuFood: 'The Food icon is highlighted. Press Q to open it.',
+  pickFood: 'Choose a food with A and D, then press Q to feed Bibi.',
+  fed: "Yum! Bibi's tummy is full.",
+
+  stinky: "I'm so stinky :(",
+  wantsShower: 'Bibi wants to shower!',
+  pressE_shower: 'Make them shower by pressing E.',
+  menuShower: 'The Shower icon is highlighted. Press Q to start the shower.',
+  showered: 'Squeaky clean! Bibi feels so much better.',
+
+  menuHelp: 'Press E any time to open the menu. A and D move, W jumps a row, Q chooses, and E closes it.',
+  bye: 'That is everything. Take good care of Bibi!',
+};
+
+// ---------- things Bibi says ----------
+export const BUBBLES = {
+  hi: 'Hi!!',
+  wheee: 'Wheee!',
+  hungry: 'My tummy is rumbling...',
+  stinky: "I'm so stinky :(",
+  bored: 'Play with me!',
+  yum: 'Yummy!',
+  clean: 'So fresh!',
+  gift: 'A present! Thank you!',
+  night: 'Good night...',
+  morning: 'Good morning!',
+  grew: 'I grew!',
+  sleepy: 'Zzz... too sleepy...',
+};

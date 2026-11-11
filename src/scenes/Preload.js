@@ -1,20 +1,37 @@
 import Phaser from 'phaser';
 import { FACE_FPS } from '../constants.js';
+import { CROPS } from '../data/items.js';
+import { addCrop, makeUiTextures, COLORS, textStyle } from '../ui.js';
 
-// face name -> number of frames
+// big heads/: face name -> number of frames
 const FACES = {
   idle_front: 1,
   idle_left: 1,
   idle_right: 1,
+  shower_front: 1,
+  shower_left: 1,
+  shower_right: 1,
   angry: 2,
   sad: 2,
   sleep: 2,
   sneeze: 2,
 };
 
+// heads/baby/: animation -> files (the file names are mapped by how each face looks)
+const BABY_ANIMS = {
+  front_idle: ['baby_sad_1'],                 // front, calm (body included)
+  front_sad: ['baby_sad_1', 'baby_sad_2'],    // front, crying (body included)
+  left_idle: ['baby_left_sad_2'],
+  left_sad: ['baby_left_super_sad_1'],
+  right_idle: ['baby_right_sad_1'],
+  right_sad: ['baby_right_super_sad_2'],
+};
+const BABY_FILES = [...new Set(Object.values(BABY_ANIMS).flat())];
+
 const BODIES = ['kid_left', 'kid_right', 'adult_left', 'adult_right'];
 const BACKGROUNDS = ['morning_1', 'morning_2', 'night'];
-const ITEMS = ['egg', 'gift'];
+const ITEMS = ['egg', 'gift', 'food_1', 'food_2', 'food_3'];
+const ICONS = ['food_icon', 'house_icon'];
 
 export default class Preload extends Phaser.Scene {
   constructor() {
@@ -22,7 +39,17 @@ export default class Preload extends Phaser.Scene {
   }
 
   preload() {
-    BODIES.forEach(b => this.load.image(`body-${b}`, `assets/bodies/body_${b}.png`));
+    // loading bar
+    const { width, height } = this.scale;
+    const bar = this.add.graphics();
+    this.add.text(width / 2, height / 2 - 30, 'Loading Bibi...', textStyle(this, 22, { color: COLORS.creamHex })).setOrigin(0.5);
+    this.load.on('progress', (p) => {
+      bar.clear();
+      bar.fillStyle(0x333333, 1).fillRect(width * 0.2, height / 2, width * 0.6, 14);
+      bar.fillStyle(COLORS.gold, 1).fillRect(width * 0.2, height / 2, width * 0.6 * p, 14);
+    });
+
+    BODIES.forEach((b) => this.load.image(`body-${b}`, `assets/bodies/body_${b}.png`));
 
     for (const [face, count] of Object.entries(FACES)) {
       for (let i = 1; i <= count; i++) {
@@ -32,24 +59,31 @@ export default class Preload extends Phaser.Scene {
         this.load.image(`head-${face}_${i}`, `assets/heads/${file}.png`);
       }
     }
+    BABY_FILES.forEach((f) => this.load.image(`baby-${f}`, `assets/heads/baby/${f}.png`));
 
-    BACKGROUNDS.forEach(b => this.load.image(`bg-${b}`, `assets/backgrounds/${b}.png`));
-    ITEMS.forEach(it => this.load.image(`item-${it}`, `assets/items/${it}.png`));
+    BACKGROUNDS.forEach((b) => this.load.image(`bg-${b}`, `assets/backgrounds/${b}.png`));
+    ITEMS.forEach((it) => this.load.image(`item-${it}`, `assets/items/${it}.png`));
+    ICONS.forEach((ic) => this.load.image(`icon-${ic}`, `assets/icon/${ic}.png`));
   }
 
   create() {
     for (const [face, count] of Object.entries(FACES)) {
       const frames = [];
       for (let i = 1; i <= count; i++) frames.push({ key: `head-${face}_${i}` });
-
+      this.anims.create({ key: `head-${face}`, frames, frameRate: FACE_FPS, repeat: -1 });
+    }
+    for (const [name, files] of Object.entries(BABY_ANIMS)) {
       this.anims.create({
-        key: `head-${face}`,
-        frames,
+        key: `baby-${name}`,
+        frames: files.map((f) => ({ key: `baby-${f}` })),
         frameRate: FACE_FPS,
         repeat: -1,
       });
     }
 
-    this.scene.start('Room');
+    for (const [key, box] of Object.entries(CROPS)) addCrop(this, key, box);
+    makeUiTextures(this);
+
+    this.scene.start('Title');
   }
 }
