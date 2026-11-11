@@ -238,17 +238,34 @@ function drawDoor(ctx, cut) {
   cut(() => circle(ctx, 64, 70, 3.5));
 }
 
-function drawController(ctx, cut) {
-  roundRect(ctx, 22, 46, 84, 38, 19);
-  circle(ctx, 36, 80, 15);
-  circle(ctx, 92, 80, 15);
-  cut(() => {
-    // D-pad (big enough to stay readable as pixels)
-    roundRect(ctx, 28, 59, 28, 11, 2);
-    roundRect(ctx, 37, 50, 11, 28, 2);
-    // two buttons
-    circle(ctx, 80, 70, 7);
-    circle(ctx, 94, 58, 7);
+// drawn pixel by pixel ('#' = white, '.' = see-through), so it stays crisp as pixel art
+const CONTROLLER = [
+  '...################...',
+  '.####################.',
+  '######################',
+  '#####.##########..####',
+  '#####.##########..####',
+  '###.....######..######',
+  '#####.########..######',
+  '#####.################',
+  '######################',
+  '#######........#######',
+  '.#####..........#####.',
+  '..###............###..',
+];
+
+function drawController(ctx) {
+  pixelGlyph(ctx, CONTROLLER, 9);
+}
+
+// draws a pixel grid exactly on the final icon pixels (1 icon pixel = S / PIXELS)
+function pixelGlyph(ctx, rows, top) {
+  const cell = S / PIXELS;
+  const left = Math.floor((PIXELS - rows[0].length) / 2);
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] === '#') ctx.fillRect((left + x) * cell, (top + y) * cell, cell, cell);
+    }
   });
 }
 
