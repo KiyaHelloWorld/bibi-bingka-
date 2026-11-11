@@ -288,6 +288,8 @@ export default class Room extends Phaser.Scene {
     await this.tween({ targets: item, scale: base, duration: 350, ease: 'Back.easeOut' });
 
     this.bubble.show(BUBBLES.yum, 2000);
+    c.setFacing('front');
+    c.setMood('eating');
     for (let bite = 1; bite <= 3; bite++) {
       await this.wait(350);
       beep(300 + bite * 80, 0.06);

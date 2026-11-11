@@ -39,11 +39,12 @@ export default class GiftCatch {
     room.bubble.hide();
 
     // mix the gift designs that are available (gift.png, gift_2.png, ...)
+    // (an even share of each, shuffled so they don't line up with the pattern)
     const designs = GIFT_DESIGNS.filter((key) => room.textures.exists(key));
-    const first = Phaser.Math.Between(0, designs.length - 1);
+    const looks = Phaser.Utils.Array.Shuffle(this.pattern.gifts.map((_, n) => designs[n % designs.length]));
 
     this.gifts = this.pattern.gifts.map(([fx, level], n) => {
-      const img = room.add.image(0, 0, designs[(first + n) % designs.length], 'crop').setDepth(14);
+      const img = room.add.image(0, 0, looks[n], 'crop').setDepth(14);
       img.fx = fx;
       img.level = level;
       img.caught = false;

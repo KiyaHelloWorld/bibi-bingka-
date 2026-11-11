@@ -25,6 +25,7 @@ const BABY_ANIMS = {
   left_sad: ['baby_left_super_sad_1'],
   right_idle: ['baby_right_sad_1'],
   right_sad: ['baby_right_super_sad_2'],
+  eating: ['baby_eating'],                    // sits inside the kid body, like the side faces
 };
 const BABY_FILES = [...new Set(Object.values(BABY_ANIMS).flat())];
 
@@ -60,6 +61,7 @@ export default class Preload extends Phaser.Scene {
       }
     }
     BABY_FILES.forEach((f) => this.load.image(`baby-${f}`, `assets/heads/baby/${f}.png`));
+    this.load.image('head-eating_1', 'assets/heads/eating.png');
 
     BACKGROUNDS.forEach((b) => this.load.image(`bg-${b}`, `assets/backgrounds/${b}.png`));
     ITEMS.forEach((it) => this.load.image(`item-${it}`, `assets/items/${it}.png`));
@@ -76,6 +78,14 @@ export default class Preload extends Phaser.Scene {
       for (let i = 1; i <= count; i++) frames.push({ key: `head-${face}_${i}` });
       this.anims.create({ key: `head-${face}`, frames, frameRate: FACE_FPS, repeat: -1 });
     }
+    // chewing: eating.png and idle_front.png take turns
+    this.anims.create({
+      key: 'head-eating',
+      frames: [{ key: 'head-eating_1' }, { key: 'head-idle_front_1' }],
+      frameRate: 4,
+      repeat: -1,
+    });
+
     for (const [name, files] of Object.entries(BABY_ANIMS)) {
       this.anims.create({
         key: `baby-${name}`,
