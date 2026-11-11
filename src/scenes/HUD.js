@@ -158,6 +158,7 @@ export default class HUD extends Phaser.Scene {
       const x0 = Math.max(x, x + d);
       const y0 = y + Math.max(0, -d);
       const len = Math.min(w - (x0 - x), h - (y0 - y));
+      if (len < 30 * u) continue; // too short: would stick out of the rounded corner
       g.lineBetween(x0 + 6 * u, y0 + 6 * u, x0 + len - 6 * u, y0 + len - 6 * u);
     }
     g.lineStyle(Math.max(2, 4 * u), 0xe9b98a, 1).strokeRoundedRect(x, y, w, h, 18 * u);
@@ -223,8 +224,8 @@ export default class HUD extends Phaser.Scene {
       const sel = menu.tiles[menu.idx];
       const s = menu.T * 1.32;
       menu.frame.clear();
-      menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeRoundedRect(sel.x - s / 2, sel.y - s / 2, s, s, 14 * u);
-      menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1).strokeRoundedRect(sel.x - s / 2 - 4 * u, sel.y - s / 2 - 4 * u, s + 8 * u, s + 8 * u, 16 * u);
+      menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeCircle(sel.x, sel.y, s / 2);
+      menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1).strokeCircle(sel.x, sel.y, s / 2 + 4 * u);
       const item = MENU[menu.idx];
       menu.label.setText(item.id === 'home' ? (asleep ? 'Wake Up' : 'Bedtime') : item.label);
     };

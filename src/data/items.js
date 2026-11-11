@@ -22,14 +22,14 @@ export const FOODS = [
 ];
 
 // The 3 x 3 menu, left to right, top to bottom (same order as the UI mockup).
-// `texture` is either one of your icons (cropped) or a pixel tile made in ui/textures.js.
+// The icons are drawn in src/menuIcons.js.
 export const MENU = [
   { id: 'stats',    label: 'Stats',      texture: 'tile-stats' },
-  { id: 'food',     label: 'Food',       texture: 'icon-food_icon', frame: 'crop' },
+  { id: 'food',     label: 'Food',       texture: 'tile-food' },
   { id: 'shower',   label: 'Shower',     texture: 'tile-shower' },
-  { id: 'home',     label: 'Bedtime',    texture: 'icon-house_icon', frame: 'crop' },
+  { id: 'home',     label: 'Bedtime',    texture: 'tile-home' },
   { id: 'door',     label: 'Go Outside', texture: 'tile-door' },
-  { id: 'gift',     label: 'Gift Catch', texture: 'tile-gift' },
+  { id: 'gift',     label: 'Gift Catch', texture: 'tile-game' },
   { id: 'phone',    label: 'Phone',      texture: 'tile-phone' },
   { id: 'settings', label: 'Settings',   texture: 'tile-settings' },
   { id: 'back',     label: 'Back',       texture: 'tile-back' },

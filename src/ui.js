@@ -1,5 +1,7 @@
-// Shared look: colors, text styles, and pixel-art textures made in code
-// (menu tiles in the same style as food_icon.png / house_icon.png, plus small effects).
+import { makeMenuIcons } from './menuIcons.js';
+
+// Shared look: colors, text styles, and small pixel-art effect textures made in code.
+// The round menu icons are drawn in menuIcons.js.
 
 export const COLORS = {
   cream: 0xfff4d6,
@@ -102,128 +104,7 @@ function pixelTexture(scene, key, rows, palette) {
   scene.textures.addCanvas(key, c);
 }
 
-function inRound(x, y, x0, y0, x1, y1, r) {
-  if (x < x0 || x > x1 || y < y0 || y > y1) return false;
-  const cx = Math.min(Math.max(x, x0 + r), x1 - r);
-  const cy = Math.min(Math.max(y, y0 + r), y1 - r);
-  return (x - cx) ** 2 + (y - cy) ** 2 <= r * r + 0.6;
-}
-
-function shade(hex, amt) {
-  const n = parseInt(hex.slice(1), 16);
-  const ch = (s) => Math.max(0, Math.min(255, ((n >> s) & 255) + amt));
-  return `rgb(${ch(16)},${ch(8)},${ch(0)})`;
-}
-
-// rounded pixel tile: brown outline, colored fill, white glyph
-function tileTexture(scene, key, color, glyph) {
-  if (scene.textures.exists(key)) return;
-  const S = 22;
-  const c = pixelCanvas(S, S, (ctx) => {
-    for (let y = 0; y < S; y++) {
-      for (let x = 0; x < S; x++) {
-        if (!inRound(x, y, 0, 0, S - 1, S - 1, 5)) continue;
-        const inner = inRound(x, y, 2, 2, S - 3, S - 3, 3);
-        ctx.fillStyle = !inner ? COLORS.brownHex : y <= 3 ? shade(color, 30) : y >= S - 4 ? shade(color, -30) : color;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    const gh = glyph.length;
-    const gw = Math.max(...glyph.map((r) => r.length));
-    const ox = Math.floor((S - gw) / 2);
-    const oy = Math.floor((S - gh) / 2);
-    ctx.fillStyle = '#ffffff';
-    glyph.forEach((row, y) => {
-      for (let x = 0; x < row.length; x++) if (row[x] === '#') ctx.fillRect(ox + x, oy + y, 1, 1);
-    });
-  });
-  scene.textures.addCanvas(key, c);
-}
-
 const GLYPHS = {
-  stats: [
-    '....######....',
-    '..##......##..',
-    '.#..........#.',
-    '#.........##.#',
-    '#........##..#',
-    '#.......##...#',
-    '#......##....#',
-    '#.....###....#',
-    '#....####....#',
-    '.#...###....#.',
-    '..##########..',
-  ],
-  shower: [
-    '.##...........',
-    '#..#..........',
-    '#.............',
-    '#.............',
-    '##############',
-    '##############',
-    '.############.',
-    '.############.',
-    '..##########..',
-    '..#........#..',
-  ],
-  door: [
-    '..##########..',
-    '..##########..',
-    '..##########..',
-    '..##########..',
-    '..##########..',
-    '..#######..#..',
-    '..##########..',
-    '..##########..',
-    '..##########..',
-    '..##########..',
-    '.############.',
-  ],
-  gift: [
-    '.############.',
-    '.############.',
-    '..............',
-    '..##########..',
-    '..###....###..',
-    '..##########..',
-    '..##########..',
-    '..##########..',
-    '..##########..',
-  ],
-  phone: [
-    '...########...',
-    '...#......#...',
-    '...#......#...',
-    '...#......#...',
-    '...#......#...',
-    '...#......#...',
-    '...#......#...',
-    '...########...',
-    '...###..###...',
-    '...########...',
-  ],
-  settings: [
-    '.....####.....',
-    '..##.####.##..',
-    '..##########..',
-    '...########...',
-    '.####....####.',
-    '.####....####.',
-    '.####....####.',
-    '...########...',
-    '..##########..',
-    '..##.####.##..',
-    '.....####.....',
-  ],
-  back: [
-    '....#.........',
-    '...##.........',
-    '..###########.',
-    '.############.',
-    '..###########.',
-    '...##.........',
-    '....#.........',
-  ],
   heart: [
     '.##.##.',
     '#######',
@@ -234,22 +115,8 @@ const GLYPHS = {
   ],
 };
 
-// menu tile colors from the UI mockup
-const TILE_COLORS = {
-  stats: '#f7888b',
-  shower: '#8ec5f7',
-  door: '#8fd58f',
-  gift: '#e78ad8',
-  phone: '#f68bb6',
-  settings: '#b8a2f2',
-  back: '#f6898c',
-  heart: '#ff8fb1',
-};
-
 export function makeUiTextures(scene) {
-  for (const [name, color] of Object.entries(TILE_COLORS)) {
-    tileTexture(scene, `tile-${name}`, color, GLYPHS[name]);
-  }
+  makeMenuIcons(scene); // round menu icons (tile-stats, tile-food, ...)
   pixelTexture(scene, 'fx-heart', GLYPHS.heart.map((r) => r.replace(/#/g, 'h')), { h: '#ff6f91' });
   pixelTexture(scene, 'fx-drop', ['b', 'b', 'B'], { b: '#8fd3ff', B: '#4aa8ec' });
   pixelTexture(scene, 'fx-bubble', ['.ww.', 'w..w', 'w..w', '.ww.'], { w: '#ffffff' });
