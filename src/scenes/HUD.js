@@ -227,15 +227,15 @@ export default class HUD extends Phaser.Scene {
         this.tweens.killTweensOf(img);
         img.setScale(img.baseScale);
         if (i === menu.idx) {
-          this.tweens.add({ targets: img, scale: img.baseScale * 1.15, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+          this.tweens.add({ targets: img, scale: img.baseScale * 1.05, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
         }
       });
       const sel = menu.tiles[menu.idx];
-      const s = menu.T * 1.32;
+      const s = menu.T * 1.1; // selection outline size (1 = touching the icon)
       menu.frame.clear();
       menu.frame.lineStyle(Math.max(3, 6 * u), 0xffffff, 1).strokeRoundedRect(sel.x - s / 2, sel.y - s / 2, s, s, s * 0.24);
       menu.frame.lineStyle(Math.max(2, 3 * u), COLORS.brown, 1)
-        .strokeRoundedRect(sel.x - s / 2 - 4 * u, sel.y - s / 2 - 4 * u, s + 8 * u, s + 8 * u, s * 0.24 + 4 * u);
+        .strokeRoundedRect(sel.x - s / 2 - 3 * u, sel.y - s / 2 - 3 * u, s + 6 * u, s + 6 * u, s * 0.24 + 3 * u);
       const item = MENU[menu.idx];
       const labels = {
         home: inside ? 'Leave House' : 'Enter House',
