@@ -6,8 +6,8 @@ import { beep } from '../systems/sound.js';
 import { MENU, FOODS } from '../data/items.js';
 import { COLORS, textStyle, unit, fit } from '../ui.js';
 
-// Runs on top of the Room: narration, the 3x3 menu, food picker, stats card,
-// the Gift Catch counter, and toasts. Bibi's needs are only shown in the Stats card.
+// Runs on top of the Room: need meters along the top, narration, the 3x3 menu,
+// food picker, stats card, the Gift Catch counter, and toasts.
 // Tells the Room what was chosen through events:
 //   'opened' (name)  'menu' | 'food' | 'stats'
 //   'closed' (name)  an overlay was closed
@@ -19,6 +19,12 @@ export default class HUD extends Phaser.Scene {
   }
 
   create() {
+    this.bars = {
+      hunger: new StatBar(this, 'Hunger', 'icon-food_icon', 'crop'),
+      hygiene: new StatBar(this, 'Hygiene', 'tile-shower'),
+      happy: new StatBar(this, 'Happy', 'tile-heart'),
+    };
+    this.statsVisible = false;
     this.overlay = null;
     this.counterBox = this.add.graphics().setDepth(450).setVisible(false);
     this.counterText = this.add.text(0, 0, '', textStyle(this, 20)).setOrigin(0.5).setDepth(451).setVisible(false);
@@ -35,9 +41,35 @@ export default class HUD extends Phaser.Scene {
   }
 
   layout() {
+    const u = unit(this);
+    Object.values(this.bars).forEach((bar, i) => {
+      bar.setVisible(this.statsVisible);
+      bar.place(10 * u + i * 246 * u, 10 * u);
+    });
+    this.narration.top = this.statsVisible ? 40 * u : 0;
     if (this.narration.visible) this.narration.layout();
     if (this.overlay) this.overlay.rebuild();
     if (this.counterText.visible) this.showCounter(this.counterText.text);
+  }
+
+  // ---------- need meters along the top ----------
+
+  setStatsVisible(v) {
+    this.statsVisible = v;
+    this.layout();
+  }
+
+  setNeeds(state) {
+    for (const [k, bar] of Object.entries(this.bars)) bar.setValue(state[k]);
+  }
+
+  flash(key) {
+    this.bars[key]?.flash();
+  }
+
+  // space taken by the meters at the top of the screen
+  topSpace() {
+    return this.statsVisible ? 44 * unit(this) : 0;
   }
 
   // ---------- Gift Catch counter ----------
@@ -45,7 +77,7 @@ export default class HUD extends Phaser.Scene {
   showCounter(text) {
     const u = unit(this);
     const t = this.counterText;
-    t.setStyle(textStyle(this, 20)).setText(text).setPosition(this.scale.width / 2, 26 * u).setVisible(true);
+    t.setStyle(textStyle(this, 20)).setText(text).setPosition(this.scale.width / 2, this.topSpace() + 22 * u).setVisible(true);
     const w = t.width + 36 * u;
     const h = t.height + 14 * u;
     this.counterBox.clear().setVisible(true);
@@ -62,7 +94,7 @@ export default class HUD extends Phaser.Scene {
   toast(text, ms = 1800) {
     const u = unit(this);
     this.toastText.setStyle(textStyle(this, 16, { color: COLORS.creamHex, backgroundColor: '#4b2e14', padding: { x: 14, y: 6 } }));
-    this.toastText.setText(text).setPosition(this.scale.width / 2, (this.counterText.visible ? 52 : 14) * u).setVisible(true);
+    this.toastText.setText(text).setPosition(this.scale.width / 2, this.topSpace() + (this.counterText.visible ? 44 : 6) * u).setVisible(true);
     if (this.toastTimer) this.toastTimer.remove(false);
     this.toastTimer = this.time.delayedCall(ms, () => this.toastText.setVisible(false));
   }
@@ -106,7 +138,7 @@ export default class HUD extends Phaser.Scene {
   freeArea() {
     const { height } = this.scale;
     const u = unit(this);
-    const top = this.narration.bottom + 8 * u;
+    const top = Math.max(this.narration.bottom, this.topSpace()) + 8 * u;
     return { top, height: height - top - 8 * u };
   }
 

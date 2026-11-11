@@ -32,7 +32,9 @@ export default class Tutorial {
     room.bubble.show(BUBBLES.wheee, 1500);
     await say(T.moveDone);
 
-    // ----- needs: the Stats button -----
+    // ----- needs: the meters, and the Stats button -----
+    hud.setStatsVisible(true);
+    hud.setNeeds(gameState);
     await say(T.needs);
     room.menuLock = 'stats';
     room.menuAllowed = true;
@@ -47,6 +49,8 @@ export default class Tutorial {
 
     // ----- hunger -----
     gameState.hunger = 12;
+    hud.setNeeds(gameState);
+    hud.flash('hunger');
     room.refreshMood();
     room.bubble.show(BUBBLES.hungry, 3000);
     beep(330, 0.08, 2);
@@ -65,6 +69,8 @@ export default class Tutorial {
 
     // ----- shower -----
     gameState.hygiene = 10;
+    hud.setNeeds(gameState);
+    hud.flash('hygiene');
     room.refreshMood();
     await room.sneeze();
     room.bubble.show(BUBBLES.stinky, 3500);

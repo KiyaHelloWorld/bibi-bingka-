@@ -20,11 +20,11 @@ export const TUTORIAL = {
   intro2: 'Your mission is to take care of them. Keep Bibi fed, clean, and happy so they grow up big and strong!',
   move: 'Press A and D to walk, and W to jump. Try all three!',
   moveDone: 'Nice moves!',
-  needs: "Bibi has three needs: Hunger, Hygiene, and Happy. Let's check them!",
+  needs: "These are Bibi's needs: Hunger, Hygiene, and Happy. You can also check them in Stats!",
   pressE_stats: 'Press E to open the menu.',
   menuStats: 'The Stats icon is highlighted. Press Q to open it.',
   closeStats: "Here are Bibi's needs. Press Q or E to close it.",
-  statsDone: "Check Stats any time. Don't let the needs run out!",
+  statsDone: "Keep an eye on the meters at the top. Don't let them run out!",
 
   hungry: 'Oh, look at that! Bibi is hungry!',
   pressE_food: 'Feed them by pressing E.',

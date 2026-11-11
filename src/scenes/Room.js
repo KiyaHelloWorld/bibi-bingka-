@@ -115,6 +115,8 @@ export default class Room extends Phaser.Scene {
 
   // needs go down over time once the tutorial is done
   startLife() {
+    this.hud.setStatsVisible(true);
+    this.hud.setNeeds(gameState);
     this.warned = {};
     this.scheduleIdleChat();
     this.time.addEvent({
@@ -122,6 +124,7 @@ export default class Room extends Phaser.Scene {
       loop: true,
       callback: () => {
         decay(gameState, 1 / 60);
+        this.hud.setNeeds(gameState);
         if (!this.busy) this.refreshMood();
         if (this.minigame.active) return; // no chatter while playing
         this.idleChat();
@@ -295,6 +298,8 @@ export default class Room extends Phaser.Scene {
 
     gameState.hunger = clamp(gameState.hunger + food.hunger);
     gameState.happy = clamp(gameState.happy + food.happy);
+    this.hud.setNeeds(gameState);
+    this.hud.flash('hunger');
     this.burst('fx-heart', 5);
     c.setFacing('front');
     this.busy = false;
@@ -347,6 +352,8 @@ export default class Room extends Phaser.Scene {
     c.setFacing('front');
     gameState.hygiene = 100;
     gameState.happy = clamp(gameState.happy + 5);
+    this.hud.setNeeds(gameState);
+    this.hud.flash('hygiene');
     this.burst('fx-sparkle', 7);
     beep(1320, 0.06, 3);
     this.bubble.show(BUBBLES.clean, 2200);
@@ -358,6 +365,8 @@ export default class Room extends Phaser.Scene {
 
   // called by GiftCatch when the game is over
   endMinigame(caught) {
+    this.hud.setNeeds(gameState);
+    if (caught > 0) this.hud.flash('happy');
     this.refreshMood();
     if (caught > 0) this.giveCare(1);
     save();
