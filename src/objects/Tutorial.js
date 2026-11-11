@@ -64,6 +64,7 @@ export default class Tutorial {
     await room.waitFor('food');
     say(T.pickFood, { advance: 'none' });
     await room.waitFor('fed');
+    await room.waitFor('kitchen:left'); // Bibi asks for more until full, then goes back
     room.menuAllowed = false;
     await say(T.fed);
 

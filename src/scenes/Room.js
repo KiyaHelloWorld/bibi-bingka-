@@ -3,6 +3,7 @@ import Character from '../objects/Character.js';
 import SpeechBubble from '../objects/SpeechBubble.js';
 import Tutorial from '../objects/Tutorial.js';
 import GiftCatch from '../objects/GiftCatch.js';
+import Kitchen from '../objects/Kitchen.js';
 import { controls } from '../systems/controls.js';
 import { beep } from '../systems/sound.js';
 import { decay, moodFor, clamp, NEEDS } from '../systems/needs.js';
@@ -44,10 +45,11 @@ export default class Room extends Phaser.Scene {
     // character
     this.character = new Character(this, width / 2, height * GROUND_Y, gameState.stage).setDepth(10);
     this.bubble = new SpeechBubble(this, this.character);
-    this.stink = [0, 1, 2].map(() => this.add.image(0, 0, 'fx-stink').setDepth(11).setVisible(false));
+    this.stink = [0, 1, 2].map(() => this.add.image(0, 0, 'fx-stink').setDepth(13).setVisible(false));
 
     this.busy = false;          // eating / showering
     this.minigame = new GiftCatch(this);
+    this.kitchen = new Kitchen(this);
     this.lastInputAt = Date.now();
     this.menuAllowed = true;    // the tutorial turns the menu off and on
     this.menuLock = null;       // the tutorial highlights one menu item
@@ -95,7 +97,8 @@ export default class Room extends Phaser.Scene {
     this.hud.events.on('opened', (name) => this.signal(name));
     this.hud.events.on('closed', (name) => this.signal(`closed:${name}`));
     this.hud.events.on('choose', (id) => this.onMenu(id));
-    this.hud.events.on('food', (food) => this.feed(food));
+    this.hud.events.on('food', (food) => this.kitchen.eat(food));
+    this.hud.events.on('foodBack', () => this.kitchen.leave());
 
     // time of day
     this.updateTimeOfDay();
@@ -205,6 +208,7 @@ export default class Room extends Phaser.Scene {
   onAction(a) {
     this.lastInputAt = Date.now();
     if (this.hudReady && this.hud.narration.handle(a)) return true;
+    if (this.kitchen.handle(a)) return true;
 
     // during Gift Catch, E stops the game; everything else is moving and jumping
     if (this.minigame.active && a === 'settings') {
@@ -239,7 +243,7 @@ export default class Room extends Phaser.Scene {
     }
     switch (id) {
       case 'food':
-        this.hud.openFood({ lock: !!this.menuLock });
+        this.kitchen.enter({ lock: !!this.menuLock });
         break;
       case 'shower':
         this.shower();
@@ -270,45 +274,6 @@ export default class Room extends Phaser.Scene {
   }
 
   // ---------- care actions ----------
-
-  async feed(food) {
-    this.busy = true;
-    const c = this.character;
-    c.stopWalking();
-    const s = c.scaleX;
-    const onLeft = c.x > this.scale.width / 2;
-    c.setFacing(onLeft ? 'left' : 'right');
-
-    const size = 900 * s;
-    const x = c.x + (onLeft ? -1 : 1) * (760 * s + size / 2);
-    const y = c.getBottomY() - size * 0.6;
-    const item = fit(this.add.image(x, y, food.key, 'crop'), size, size).setDepth(12);
-    const base = item.scale;
-    item.setScale(0);
-    await this.tween({ targets: item, scale: base, duration: 350, ease: 'Back.easeOut' });
-
-    this.bubble.show(BUBBLES.yum, 2000);
-    c.setFacing('front');
-    c.setMood('eating');
-    for (let bite = 1; bite <= 3; bite++) {
-      await this.wait(350);
-      beep(300 + bite * 80, 0.06);
-      c.wiggle();
-      await this.tween({ targets: item, scale: base * (1 - bite * 0.3), duration: 120 });
-    }
-    item.destroy();
-
-    gameState.hunger = clamp(gameState.hunger + food.hunger);
-    gameState.happy = clamp(gameState.happy + food.happy);
-    this.hud.setNeeds(gameState);
-    this.hud.flash('hunger');
-    this.burst('fx-heart', 5);
-    c.setFacing('front');
-    this.busy = false;
-    this.refreshMood();
-    this.giveCare(1);
-    this.signal('fed');
-  }
 
   async shower() {
     this.busy = true;
@@ -463,11 +428,13 @@ export default class Room extends Phaser.Scene {
     this.character.x = Phaser.Math.Clamp(this.character.x, pad, width - pad);
     this.stink.forEach((s) => s.setScale(6 * unit(this)));
     this.minigame?.layout();
+    this.kitchen?.layout(); // in the kitchen, Bibi sits in the chair instead
   }
 
   // ---------- time of day ----------
 
   updateTimeOfDay() {
+    if (this.kitchen?.active) return; // check again after mealtime
     const hour = new Date().getHours();
     const night = hour >= NIGHTTIME || hour < EARLY_MORNING;
 
@@ -499,7 +466,7 @@ export default class Room extends Phaser.Scene {
       c.isPlayerMoving = false;
     }
 
-    c.y = this.groundY - c.jumpState.h * this.scale.height * JUMP_HEIGHT;
+    if (!this.kitchen.active) c.y = this.groundY - c.jumpState.h * this.scale.height * JUMP_HEIGHT;
     this.bubble.update();
     this.minigame.update();
 
@@ -519,6 +486,15 @@ export default class Room extends Phaser.Scene {
 
   wait(ms) {
     return new Promise((r) => this.time.delayedCall(ms, r));
+  }
+
+  // fade the room camera out (true) or back in (false)
+  fade(ms, out) {
+    return new Promise((r) => {
+      if (out) this.cameras.main.fadeOut(ms, 255, 255, 255);
+      else this.cameras.main.fadeIn(ms, 255, 255, 255);
+      this.time.delayedCall(ms + 20, r);
+    });
   }
 
   tween(config) {
