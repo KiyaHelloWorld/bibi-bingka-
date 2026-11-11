@@ -86,16 +86,15 @@ export const MINIGAME = {
 
 // ---------- random things Bibi says when idle ----------
 export const IDLE_LINES = [
-  'Have an Animo Christmas!',
-  'Merry Christmas!',
-  'Animo La Salle!',
-  'I love bibingka!',
-  'Is it Noche Buena yet?',
-  "You're my best friend!",
-  'Can we play Gift Catch?',
-  'Let us go caroling!',
-  'Simbang Gabi tonight?',
-  'Look at the tree! So pretty!',
+  "Have an Animo Christmas",
+  "Animo La Salle!",
+  "Merry Christmas!",
+  "Is it Nocha Buena already?",
+  "Live Jesus in our hearts! Forever!",
+  "Can we play Gift Catch?",
+  "I want to eat Bibingka so bad!",
+  "Let's go caroling!",
+  "Simbang Gabi tonight, G?"
 ];
 export const IDLE_CHAT_MIN_S = 15;   // Bibi waits this long (at least) between idle lines
 export const IDLE_CHAT_MAX_S = 30;   // ...and at most this long
