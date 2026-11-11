@@ -1,10 +1,9 @@
-import Phaser from 'phaser';
-
-// Pastel rounded-square menu icons, drawn in code (in the style of the UI mockup).
+// Pastel rounded-square menu icons in pixel art, drawn in code (in the style of the UI mockup).
 // Each icon becomes a texture called `tile-<name>`, e.g. tile-food, tile-game.
 // To change a color, edit ICONS below. To change a symbol, edit its draw function.
 
-const S = 128; // texture size in pixels (drawn smooth, then scaled to fit the menu)
+const S = 128;  // drawing size (shapes are drawn at this size first)
+const PIXELS = 32; // final icon size in pixels: smaller = chunkier pixels
 
 export const ICONS = {
   stats:    { color: '#f7888b', draw: drawGauge },
@@ -24,46 +23,87 @@ export function makeMenuIcons(scene) {
   for (const [name, { color, draw }] of Object.entries(ICONS)) {
     const key = `tile-${name}`;
     if (scene.textures.exists(key)) continue;
-    scene.textures.addCanvas(key, iconCanvas(color, draw));
-    // smooth edges for these (the rest of the game stays pixel-crisp)
-    scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
+    // drawn big, then shrunk to PIXELS x PIXELS with hard edges (pixel art, like the rest of the game)
+    scene.textures.addCanvas(key, pixelIcon(color, draw));
   }
 }
 
-// ---------- the round button ----------
+// ---------- pixel-art version ----------
 
-function iconCanvas(color, draw) {
+function pixelIcon(color, draw) {
+  const N = PIXELS;
+  const body = bodyCanvas(color);
+  const glyph = glyphCanvas(draw);
+
+  const out = document.createElement('canvas');
+  out.width = N;
+  out.height = N;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(shrink(body, N, { posterize: 14, outline: shade(color, -80) }), 0, 0);
+  ctx.globalAlpha = 0.45;
+  ctx.drawImage(shrink(tint(glyph, shade(color, -50)), N), 0, 1); // shadow under the symbol
+  ctx.globalAlpha = 1;
+  ctx.drawImage(shrink(glyph, N, { solid: '#ffffff' }), 0, 0);
+  return out;
+}
+
+// shrink a big drawing to N x N with hard edges: every pixel is either fully there or not
+function shrink(src, N, { posterize = 0, outline = null, solid = null } = {}) {
+  const c = document.createElement('canvas');
+  c.width = N;
+  c.height = N;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(src, 0, 0, N, N);
+  const img = ctx.getImageData(0, 0, N, N);
+  const d = img.data;
+  const solidRGB = solid && [1, 3, 5].map((i) => parseInt(solid.slice(i, i + 2), 16));
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 128) {
+      d[i + 3] = 0;
+      continue;
+    }
+    d[i + 3] = 255;
+    if (solidRGB) [d[i], d[i + 1], d[i + 2]] = solidRGB;
+    else if (posterize) for (let k = 0; k < 3; k++) d[i + k] = Math.round(d[i + k] / posterize) * posterize;
+  }
+  // darker 1-pixel outline on the edge of the shape
+  if (outline) {
+    const o = outline.match(/\d+/g).map(Number);
+    const solidAt = (x, y) => x >= 0 && y >= 0 && x < N && y < N && d[(y * N + x) * 4 + 3] === 255;
+    const edge = [];
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        if (solidAt(x, y) && (!solidAt(x - 1, y) || !solidAt(x + 1, y) || !solidAt(x, y - 1) || !solidAt(x, y + 1))) edge.push((y * N + x) * 4);
+      }
+    }
+    edge.forEach((i) => ([d[i], d[i + 1], d[i + 2]] = o));
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+}
+
+// ---------- the button (drawn big) ----------
+
+function bodyCanvas(color) {
   const c = canvas();
   const ctx = c.getContext('2d');
-  const m = 4;          // margin around the square
-  const corner = 26;    // corner roundness (0 = sharp square)
-
-  // darker bottom edge (gives the button some depth)
+  const m = 4;
+  const corner = 26; // corner roundness (0 = sharp square)
   ctx.fillStyle = shade(color, -28);
   roundRect(ctx, m, m, S - m * 2, S - m * 2, corner);
-
-  // main face, a little higher, with a soft light from the top-left
   const grad = ctx.createRadialGradient(S * 0.3, S * 0.25, 4, S / 2, S / 2, S * 0.75);
   grad.addColorStop(0, shade(color, 34));
   grad.addColorStop(0.5, color);
   grad.addColorStop(1, shade(color, -6));
   ctx.fillStyle = grad;
-  roundRect(ctx, m + 2, m, S - m * 2 - 4, S - m * 2 - 6, corner - 2);
-
-  // glossy highlight along the top
+  roundRect(ctx, m + 2, m, S - m * 2 - 4, S - m * 2 - 10, corner - 2);
   ctx.save();
-  ctx.globalAlpha = 0.25;
+  ctx.globalAlpha = 0.3;
   ctx.fillStyle = '#ffffff';
-  roundRect(ctx, m + 14, m + 7, S - m * 2 - 28, 16, 8);
+  roundRect(ctx, m + 16, m + 8, S - m * 2 - 32, 12, 6);
   ctx.restore();
-
-  // the white symbol, with a soft shadow under it
-  const glyph = glyphCanvas(draw);
-  ctx.save();
-  ctx.globalAlpha = 0.35;
-  ctx.drawImage(tint(glyph, shade(color, -45)), 0, 3);
-  ctx.restore();
-  ctx.drawImage(glyph, 0, 0);
   return c;
 }
 
@@ -172,9 +212,9 @@ function drawMoon(ctx, cut) {
   // crescent moon
   circle(ctx, 58, 66, 32);
   cut(() => circle(ctx, 76, 54, 28));
-  // little "z z"
-  ctx.lineWidth = 6;
-  for (const [x, y, s] of [[80, 40, 16], [96, 64, 11]]) {
+  // one bold "z"
+  ctx.lineWidth = 8;
+  for (const [x, y, s] of [[82, 30, 24]]) {
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + s, y);
@@ -203,17 +243,12 @@ function drawController(ctx, cut) {
   circle(ctx, 36, 80, 15);
   circle(ctx, 92, 80, 15);
   cut(() => {
-    // D-pad
-    roundRect(ctx, 32, 61, 22, 8, 2);
-    roundRect(ctx, 39, 54, 8, 22, 2);
-    // buttons
-    circle(ctx, 84, 58, 5);
-    circle(ctx, 94, 67, 5);
-    circle(ctx, 74, 67, 5);
-    circle(ctx, 84, 76, 5);
-    // start / select
-    roundRect(ctx, 57, 56, 6, 4, 2);
-    roundRect(ctx, 66, 56, 6, 4, 2);
+    // D-pad (big enough to stay readable as pixels)
+    roundRect(ctx, 28, 59, 28, 11, 2);
+    roundRect(ctx, 37, 50, 11, 28, 2);
+    // two buttons
+    circle(ctx, 80, 70, 7);
+    circle(ctx, 94, 58, 7);
   });
 }
 
