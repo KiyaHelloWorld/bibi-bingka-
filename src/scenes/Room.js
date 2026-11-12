@@ -8,7 +8,7 @@ import Bedroom from '../objects/Bedroom.js';
 import ShowerRoom from '../objects/ShowerRoom.js';
 import { inSleepWindow, nightKey } from '../systems/clock.js';
 import { controls } from '../systems/controls.js';
-import { beep } from '../systems/sound.js';
+import { beep, playJingleBells } from '../systems/sound.js';
 import { decay, moodFor, clamp, NEEDS } from '../systems/needs.js';
 import { gameState, save, resetSave } from '../gameState.js';
 import { BUBBLES, IDLE_LINES, IDLE_CHAT_MIN_S, IDLE_CHAT_MAX_S } from '../data/dialogue.js';
@@ -196,8 +196,14 @@ export default class Room extends Phaser.Scene {
     do line = Phaser.Utils.Array.GetRandom(IDLE_LINES);
     while (line === this.lastChat && IDLE_LINES.length > 1);
     this.lastChat = line;
-    this.bubble.show(line, 3200);
-    beep(880, 0.04, 2);
+    if (/jingle bells/i.test(line)) {
+      // Bibi sings: play the Jingle Bells tune and keep the bubble up while it plays
+      const seconds = playJingleBells();
+      this.bubble.show(line, Math.max(3200, seconds * 1000 + 600));
+    } else {
+      this.bubble.show(line, 3200);
+      beep(880, 0.04, 2);
+    }
     this.scheduleIdleChat();
   }
 
