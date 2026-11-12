@@ -1,4 +1,4 @@
-import { NEEDS_DECAY_PER_MIN, LOW_NEED } from '../constants.js';
+import { NEEDS_DECAY_PER_MIN, LOW_NEED, VERY_LOW_NEED } from '../constants.js';
 
 export const NEEDS = ['hunger', 'hygiene', 'happy'];
 
@@ -16,6 +16,7 @@ export function decay(state, minutes) {
 
 export function moodFor(state) {
   if (state.asleep) return 'sleep';
+  if (NEEDS.every((k) => state[k] < VERY_LOW_NEED)) return 'superSad'; // everything very low: crying
   if (state.happy < 10) return 'angry';
   if (NEEDS.some((k) => state[k] < LOW_NEED)) return 'sad';
   return 'idle';

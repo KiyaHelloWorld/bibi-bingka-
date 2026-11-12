@@ -40,6 +40,7 @@ export const EDGE_PADDING = 80;    // how close to the edge it can go
 // needs (0-100), how much they drop per real minute after the tutorial
 export const NEEDS_DECAY_PER_MIN = { hunger: 2, hygiene: 1.5, happy: 1.8 };
 export const LOW_NEED = 25;              // below this Bibi gets sad and complains
+export const VERY_LOW_NEED = 20;         // when ALL needs are below this, Bibi is super sad (crying)
 export const MAX_AWAY_MINUTES = 180;     // most "time away" counted when the game is reopened
 
 // kitchen (mealtime). Numbers are on the 3267 x 2362 kitchen art.
