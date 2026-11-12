@@ -16,7 +16,7 @@ export const HATCH = {
 
 // ---------- tutorial ----------
 export const TUTORIAL = {
-  intro1: 'This is Bibi, your baby Tomodachi!',
+  intro1: 'This is Bibi, your baby Tomagotchi!',
   intro2: 'Your mission is to take care of them. Keep Bibi fed, clean, and happy so they grow up big and strong!',
   move: 'Press A and D to walk, and W to jump. Try all three!',
   moveDone: 'Nice moves!',
@@ -88,7 +88,6 @@ export const MINIGAME = {
 
 // ---------- random things Bibi says when idle ----------
 export const IDLE_LINES = [
-  "Sobrang cute nila Elisha, Bea, Zak and Kiya! grabe!!!",
   "Hi! My name's Bibi! What's yours?",
   "Have an Animo Christmas!",
   "Animo La Salle!",
@@ -102,8 +101,7 @@ export const IDLE_LINES = [
   "Jingle bells! Jingle bells! Jingle all the way!",
   "Don't forget to drink water!",
   "Always remember to take care of yourself, human! >:(", 
-  "Simbang Gabi tonight, G?",
-  "Let's go to Animusika?"
+  "Simbang Gabi tonight, G?"
 ];
 export const IDLE_CHAT_MIN_S = 10;   // Bibi waits this long (at least) between idle lines
 export const IDLE_CHAT_MAX_S = 25;   // ...and at most this long
