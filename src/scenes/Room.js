@@ -27,6 +27,8 @@ import {
   NIGHTTIME,
   LOW_NEED,
   MAX_AWAY_MINUTES,
+  SLEEP_XP,
+  SLEEP_XP_COOLDOWN_MIN,
 } from '../constants.js';
 
 const STAGE_NAMES = { baby: 'Baby', kid: 'Kid', adult: 'Adult' };
@@ -293,7 +295,8 @@ export default class Room extends Phaser.Scene {
         this.setInside(!gameState.inside);
         break;
       case 'sleep':
-        this.setAsleep(!gameState.asleep);
+        if (!gameState.asleep) this.putToBed();
+        else this.setAsleep(false);
         break;
       case 'gift':
         this.minigame.start();
@@ -416,6 +419,16 @@ export default class Room extends Phaser.Scene {
     }
   }
 
+  // the player puts Bibi to bed: a tiny bit of growth XP (once every SLEEP_XP_COOLDOWN_MIN)
+  async putToBed() {
+    await this.setAsleep(true);
+    const cooldown = SLEEP_XP_COOLDOWN_MIN * 60000;
+    if (Date.now() - (gameState.lastSleepXp || 0) < cooldown) return;
+    gameState.lastSleepXp = Date.now();
+    this.hud.toast(BUBBLES.sleepXp, 2500);
+    this.giveCare(SLEEP_XP);
+  }
+
   // every 30s: at 22:00 Bibi goes to bed by themselves; at 4:00 they wake up
   checkBedtime() {
     if (!gameState.tutorialDone) return;
@@ -465,7 +478,7 @@ export default class Room extends Phaser.Scene {
   // ---------- growth ----------
 
   giveCare(amount) {
-    gameState.care += amount;
+    gameState.care = Math.round((gameState.care + amount) * 10) / 10; // keeps 0.5 steps tidy
 
     const stageInfo = STAGES[gameState.stage];
     if (stageInfo.next && stageInfo.careToGrow && gameState.care >= stageInfo.careToGrow) {
