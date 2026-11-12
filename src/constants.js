@@ -69,9 +69,8 @@ export const SLEEP_END_HOUR = 4;
 
 // bedroom positions, on the 3267 x 2362 bedroom art
 export const BEDROOM = {
-  bibiScale: 0.55,  // Bibi's size in the bedroom
   doorX: 2950,      // where Bibi appears (by the door)
-  floorY: 2290,     // Bibi's feet when standing on the floor
+  floorY: 2080,     // Bibi's feet when standing on the floor (bigger = lower)
   bedFootX: 1650,   // where Bibi stops before hopping onto the bed
   bedX: 760,        // middle of the bed
   bedY: 1760,       // Bibi's feet when in bed (smaller = higher)

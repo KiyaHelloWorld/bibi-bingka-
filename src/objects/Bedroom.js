@@ -50,7 +50,7 @@ export default class Bedroom {
     this.dark.setPosition(0, 0).setSize(width, height);
     const c = this.room.character;
     const m = this.measure();
-    c.setScale(m.s * BEDROOM.bibiScale);
+    c.setScale(this.room.characterScale()); // same size as everywhere else
     if (this.state === 'inBed') c.setPosition(m.x(BEDROOM.bedX), this.yForFeet(m.y(BEDROOM.bedY)));
   }
 
@@ -112,13 +112,15 @@ export default class Bedroom {
     this.state = 'leaving';
     if (animate) {
       await this.setLight(true); // lights on
+      room.bubble.hide();
       c.setMood('idle');
       const m = this.measure();
-      // stretch, hop off the bed, then back to where Bibi was
-      c.wiggle();
-      await room.wait(400);
+      // get out of bed and walk right, to the door, then leave
+      c.setFacing('right');
+      await room.wait(300);
       const floor = this.yForFeet(m.y(BEDROOM.floorY));
-      await room.tween({ targets: c, x: m.x(BEDROOM.bedFootX), y: floor, duration: 350, ease: 'Quad.easeIn' });
+      await room.tween({ targets: c, x: m.x(BEDROOM.bedFootX), y: floor, duration: 700 });
+      await room.tween({ targets: c, x: m.x(BEDROOM.doorX), duration: 1200 });
       beep(880, 0.05, 4);
       await room.fade(250, true);
     }
