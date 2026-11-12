@@ -1,5 +1,9 @@
 import { COLORS, textStyle, unit, fit } from '../ui.js';
 
+// size of each need meter (the HUD spaces everything else from these)
+export const STAT_BAR_WIDTH = 236;
+export const STAT_BAR_HEIGHT = 47;
+
 // One need meter: icon, label, and a bar that turns orange/red when low.
 export default class StatBar {
   constructor(scene, label, texture, frame) {
@@ -33,8 +37,8 @@ export default class StatBar {
   draw() {
     if (this.x === undefined) return;
     const u = unit(this.scene);
-    const w = 236 * u;
-    const h = 47 * u;
+    const w = STAT_BAR_WIDTH * u;
+    const h = STAT_BAR_HEIGHT * u;
     const { x, y } = this;
     const low = this.value < 45;
     const crit = this.value < 20;

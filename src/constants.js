@@ -71,6 +71,14 @@ export const SLEEP_END_HOUR = 4;
 export const SLEEP_XP = 0.5;               // feeding / showering / Gift Catch give 1
 export const SLEEP_XP_COOLDOWN_MIN = 30;   // at most once every 30 minutes (no Sleep/Wake spamming)
 
+// shower room positions, on the 3267 x 2362 shower art
+export const SHOWER_ROOM = {
+  enterX: 2600,   // where Bibi appears (right side)
+  showerX: 1120,  // under the showerhead
+  waterY: 680,    // where the water starts (bottom of the showerhead)
+  floorY: 2080,   // Bibi's feet (bigger = lower)
+};
+
 // bedroom positions, on the 3267 x 2362 bedroom art
 export const BEDROOM = {
   doorX: 2950,      // where Bibi appears (by the door)

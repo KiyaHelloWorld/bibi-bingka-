@@ -7,6 +7,10 @@ import { STORY, HATCH } from '../data/dialogue.js';
 import { HATCH_PRESSES } from '../constants.js';
 import { COLORS, cover, fit, unit } from '../ui.js';
 
+// egg.png: middle of the cropped picture vs. middle of the round egg body (art pixels)
+const EGG_CROP_CENTER_X = 1977;
+const EGG_BODY_CENTER_X = 1680;
+
 // The opening story, then the egg hatches.
 export default class Story extends Phaser.Scene {
   constructor() {
@@ -48,6 +52,8 @@ export default class Story extends Phaser.Scene {
     cover(this.bgBack, width, height);
     this.eggSize = height * 0.42;
     fit(this.egg, this.eggSize, this.eggSize);
+    // the hat's tail sticks out to the right, so centre the round egg body instead of the picture
+    this.egg.x = (EGG_CROP_CENTER_X - EGG_BODY_CENTER_X) * this.egg.scaleX;
     this.eggBox.setPosition(width / 2, height * 0.4);
     this.drawCracks();
     this.drawDots();
