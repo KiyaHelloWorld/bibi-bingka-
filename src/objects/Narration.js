@@ -146,6 +146,7 @@ export default class Narration {
       this.tagBox.strokeRoundedRect(tx, ty, tw, th, th / 2);
       this.tag.setPosition(tx + 10 * u, ty + 3 * u);
     }
+    this.onLayout?.();
   }
 
   destroy() {
