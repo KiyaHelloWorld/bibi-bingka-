@@ -9,6 +9,7 @@ const DEFAULT_STATE = {
   happy: 80,
   asleep: false,
   inside: false, // in the house (living room)
+  wokeNight: null, // the night the player woke Bibi up (so Bibi stays awake that night)
   sound: true,
   lastSeen: Date.now(),
 };

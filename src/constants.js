@@ -60,4 +60,19 @@ export const HATCH_PRESSES = 12;
 // time of day (real clock, 24h)
 export const EARLY_MORNING = 5;    // morning_1 starts at 5:00
 export const DAYTIME = 9;          // morning_2 starts at 9:00
-export const NIGHTTIME = 18;       // night starts at 18:00
+export const NIGHTTIME = 18;       // night sky starts at 18:00
+
+// bedtime (real clock): Bibi is asleep in the bedroom from 22:00 to 4:00.
+// Playing during these hours, the player has to wake Bibi up first.
+export const SLEEP_START_HOUR = 22;
+export const SLEEP_END_HOUR = 4;
+
+// bedroom positions, on the 3267 x 2362 bedroom art
+export const BEDROOM = {
+  bibiScale: 0.55,  // Bibi's size in the bedroom
+  doorX: 2950,      // where Bibi appears (by the door)
+  floorY: 2290,     // Bibi's feet when standing on the floor
+  bedFootX: 1650,   // where Bibi stops before hopping onto the bed
+  bedX: 760,        // middle of the bed
+  bedY: 1760,       // Bibi's feet when in bed (smaller = higher)
+};

@@ -4,6 +4,8 @@ import SpeechBubble from '../objects/SpeechBubble.js';
 import Tutorial from '../objects/Tutorial.js';
 import GiftCatch from '../objects/GiftCatch.js';
 import Kitchen from '../objects/Kitchen.js';
+import Bedroom from '../objects/Bedroom.js';
+import { inSleepWindow, nightKey } from '../systems/clock.js';
 import { controls } from '../systems/controls.js';
 import { beep } from '../systems/sound.js';
 import { decay, moodFor, clamp, NEEDS } from '../systems/needs.js';
@@ -50,6 +52,7 @@ export default class Room extends Phaser.Scene {
     this.busy = false;          // eating / showering
     this.minigame = new GiftCatch(this);
     this.kitchen = new Kitchen(this);
+    this.bedroom = new Bedroom(this);
     this.lastInputAt = Date.now();
     this.menuAllowed = true;    // the tutorial turns the menu off and on
     this.menuLock = null;       // the tutorial highlights one menu item
@@ -109,6 +112,18 @@ export default class Room extends Phaser.Scene {
     // time of day
     this.updateTimeOfDay();
     this.time.addEvent({ delay: 60000, loop: true, callback: () => this.updateTimeOfDay() });
+
+    // bedtime: Bibi is already in bed (or was left asleep last time)
+    if (gameState.tutorialDone) {
+      const bedtime = inSleepWindow() && gameState.wokeNight !== nightKey();
+      if (bedtime) gameState.asleep = true;
+      if (gameState.asleep) {
+        this.bedroom.enter({ animate: false });
+        this.time.delayedCall(800, () => this.hud.toast(BUBBLES.wakeFirst, 3500));
+      }
+    }
+    this.wasInSleepWindow = inSleepWindow();
+    this.time.addEvent({ delay: 30000, loop: true, callback: () => this.checkBedtime() });
 
     if (!gameState.tutorialDone) {
       this.tutorial = new Tutorial(this);
@@ -224,6 +239,12 @@ export default class Room extends Phaser.Scene {
       return true;
     }
 
+    if (gameState.asleep && ['jump', 'left', 'right', 'select'].includes(a) && !(this.hudReady && this.hud.isOpen())) {
+      if (!this.nagAt || Date.now() - this.nagAt > 2500) this.hud.toast(BUBBLES.wakeFirst, 2500);
+      this.nagAt = Date.now();
+      return true;
+    }
+
     if (a === 'jump') {
       if (this.canMove() && this.character.jump()) {
         beep(500, 0.06, 2);
@@ -244,9 +265,9 @@ export default class Room extends Phaser.Scene {
   }
 
   onMenu(id) {
-    const blockedWhileAsleep = ['food', 'shower', 'gift', 'home'];
-    if (gameState.asleep && blockedWhileAsleep.includes(id)) {
-      this.hud.toast('Bibi is sleeping. Wake them up first!');
+    // while asleep, wake Bibi up before doing anything else
+    if (gameState.asleep && !['sleep', 'settings'].includes(id)) {
+      this.hud.toast(BUBBLES.wakeFirst, 2500);
       return;
     }
     switch (id) {
@@ -372,16 +393,36 @@ export default class Room extends Phaser.Scene {
     this.bubble.show(inside ? BUBBLES.inside : BUBBLES.outside, 2000);
   }
 
-  // Sleep / Wake Up. (Sleeps in the bedroom once bedroom.png is added; until then, where Bibi is.)
-  setAsleep(asleep) {
+  // Sleep: teleport to the bedroom, walk to the bed and sleep. Wake Up: hop off, back to where Bibi was.
+  async setAsleep(asleep) {
+    if (asleep === gameState.asleep) return;
     gameState.asleep = asleep;
-    this.cameras.main.flash(250, 255, 255, 255);
+    // waking up during bedtime hours keeps Bibi awake for the rest of that night
+    if (!asleep && inSleepWindow()) gameState.wokeNight = nightKey();
     save();
-    this.character.stopWalking();
-    this.character.setFacing('front');
-    this.refreshMood();
-    this.updateTimeOfDay();
-    this.bubble.show(asleep ? BUBBLES.night : BUBBLES.morning, 2200);
+    if (asleep) {
+      await this.bedroom.enter();
+      this.bubble.show(BUBBLES.night, 2200);
+    } else {
+      await this.bedroom.leave();
+      this.bubble.show(BUBBLES.morning, 2200);
+    }
+  }
+
+  // every 30s: at 22:00 Bibi goes to bed by themselves; at 4:00 they wake up
+  checkBedtime() {
+    if (!gameState.tutorialDone) return;
+    const inWindow = inSleepWindow();
+    const free = !this.busy && !this.minigame.active && !this.kitchen.active && !this.hud.isOpen();
+    if (inWindow && !this.wasInSleepWindow) {
+      if (!free) return; // try again in a moment
+      if (!gameState.asleep && gameState.wokeNight !== nightKey()) this.setAsleep(true);
+    }
+    if (!inWindow && this.wasInSleepWindow && gameState.asleep) {
+      if (!free) return;
+      this.setAsleep(false);
+    }
+    this.wasInSleepWindow = inWindow;
   }
 
   refreshMood() {
@@ -453,6 +494,7 @@ export default class Room extends Phaser.Scene {
     this.stink.forEach((s) => s.setScale(6 * unit(this)));
     this.minigame?.layout();
     this.kitchen?.layout(); // in the kitchen, Bibi sits in the chair instead
+    this.bedroom?.layout(); // in the bedroom, Bibi is by the door or in bed
   }
 
   // ---------- time of day ----------
@@ -462,16 +504,8 @@ export default class Room extends Phaser.Scene {
     const hour = new Date().getHours();
     const night = hour >= NIGHTTIME || hour < EARLY_MORNING;
 
-    // Bibi falls asleep when night starts and wakes up in the morning (not during the tutorial)
-    if (this.wasNight !== undefined && gameState.tutorialDone) {
-      if (night && !this.wasNight && !gameState.asleep) return this.setAsleep(true);
-      if (!night && this.wasNight && gameState.asleep) return this.setAsleep(false);
-    }
-    this.wasNight = night;
-
-    let bgKey;
-    if (gameState.asleep && this.textures.exists('bg-bedroom')) bgKey = 'bg-bedroom'; // once bedroom.png is added
-    else if (gameState.inside) bgKey = 'bg-living_room';
+    let bgKey; // (the bedroom is drawn by Bedroom while Bibi sleeps)
+    if (gameState.inside) bgKey = 'bg-living_room';
     else if (night) bgKey = 'bg-night';
     else if (hour < DAYTIME) bgKey = 'bg-morning_1';
     else bgKey = 'bg-morning_2';
@@ -492,7 +526,7 @@ export default class Room extends Phaser.Scene {
       c.isPlayerMoving = false;
     }
 
-    if (!this.kitchen.active) c.y = this.groundY - c.jumpState.h * this.scale.height * JUMP_HEIGHT;
+    if (!this.kitchen.active && !this.bedroom.active) c.y = this.groundY - c.jumpState.h * this.scale.height * JUMP_HEIGHT;
     this.bubble.update();
     this.minigame.update();
 

@@ -172,7 +172,8 @@ export default class HUD extends Phaser.Scene {
   // ---------- 3x3 menu ----------
 
   openMenu({ lock = null, asleep = false, inside = false } = {}) {
-    const menu = { idx: lock ? MENU.findIndex((m) => m?.id === lock) : this.lastMenuIdx ?? 0 };
+    const startOn = lock || (asleep ? 'sleep' : null); // asleep: start on Wake Up
+    const menu = { idx: startOn ? MENU.findIndex((m) => m?.id === startOn) : this.lastMenuIdx ?? 0 };
     // move to the next real icon (skips the empty spots in the grid)
     const step = (from, by) => {
       let i = from;
@@ -208,6 +209,7 @@ export default class HUD extends Phaser.Scene {
         const img = fit(this.add.image(x, y, item.texture, item.frame), T, T);
         img.baseScale = img.scale;
         if (lock && item.id !== lock) img.setAlpha(0.3);
+        if (asleep && !['sleep', 'settings'].includes(item.id)) img.setAlpha(0.3); // wake Bibi up first
         c.add(img);
         return img;
       });
