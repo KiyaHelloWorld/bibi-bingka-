@@ -10,6 +10,21 @@ export default class Bedroom {
     this.active = false;
     this.state = null; // 'arriving' | 'inBed' | 'leaving'
     this.bg = room.add.image(0, 0, 'bg-bedroom').setDepth(1).setVisible(false);
+    // the room light: a dark layer over the bedroom (and Bibi) when the light is off
+    this.dark = room.add.rectangle(0, 0, 10, 10, BEDROOM.darkColor, 1).setOrigin(0).setDepth(15).setAlpha(0);
+  }
+
+  // light on/off (animate = fade, otherwise instant)
+  async setLight(on, animate = true) {
+    const room = this.room;
+    room.tweens.killTweensOf(this.dark);
+    const alpha = on ? 0 : BEDROOM.darkness;
+    if (!animate) {
+      this.dark.setAlpha(alpha);
+      return;
+    }
+    beep(on ? 900 : 300, 0.04, 2); // click
+    await room.tween({ targets: this.dark, alpha, duration: on ? 250 : 600 });
   }
 
   // screen positions from the bedroom art (3267 x 2362)
@@ -32,6 +47,7 @@ export default class Bedroom {
     if (!this.active) return;
     const { width, height } = this.room.scale;
     cover(this.bg, width, height);
+    this.dark.setPosition(0, 0).setSize(width, height);
     const c = this.room.character;
     const m = this.measure();
     c.setScale(m.s * BEDROOM.bibiScale);
@@ -56,6 +72,7 @@ export default class Bedroom {
     if (!animate) {
       this.state = 'inBed';
       this.show();
+      this.setLight(false, false); // already asleep: light is off
       c.setFacing('front');
       room.busy = false;
       room.refreshMood();
@@ -84,6 +101,8 @@ export default class Bedroom {
     this.state = 'inBed';
     room.busy = false;
     room.refreshMood(); // sleep face
+    await room.wait(300);
+    await this.setLight(false); // lights off
   }
 
   async leave({ animate = true } = {}) {
@@ -92,6 +111,7 @@ export default class Bedroom {
     room.busy = true;
     this.state = 'leaving';
     if (animate) {
+      await this.setLight(true); // lights on
       c.setMood('idle');
       const m = this.measure();
       // stretch, hop off the bed, then back to where Bibi was
@@ -103,6 +123,7 @@ export default class Bedroom {
       await room.fade(250, true);
     }
     this.bg.setVisible(false);
+    this.setLight(true, false);
     room.bg.setVisible(true);
     this.active = false;
     this.state = null;

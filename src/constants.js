@@ -75,4 +75,6 @@ export const BEDROOM = {
   bedFootX: 1650,   // where Bibi stops before hopping onto the bed
   bedX: 760,        // middle of the bed
   bedY: 1760,       // Bibi's feet when in bed (smaller = higher)
+  darkness: 0.6,    // how dark the room gets with the light off (0 = no change, 1 = black)
+  darkColor: 0x0b0f2e, // night-blue
 };
