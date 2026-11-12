@@ -83,6 +83,8 @@ export default class Tutorial {
     say(T.pressE_shower, { advance: 'none' });
     await room.waitFor('menu');
     say(T.menuShower, { advance: 'none' });
+    await room.waitFor('shower:start');
+    hud.narration.hide(); // Bibi is on the way to the shower room: the note isn't needed any more
     await room.waitFor('showered');
     await say(T.showered);
 

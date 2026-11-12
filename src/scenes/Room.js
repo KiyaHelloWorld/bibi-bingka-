@@ -315,6 +315,7 @@ export default class Room extends Phaser.Scene {
 
   async shower() {
     this.busy = true;
+    this.signal('shower:start');
     const c = this.character;
     const u = unit(this);
     c.stopWalking();
