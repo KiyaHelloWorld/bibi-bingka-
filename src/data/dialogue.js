@@ -101,7 +101,7 @@ export const IDLE_LINES = [
   "Jingle bells! Jingle bells! Jingle all the way! Yupiee!",
   "Don't forget to drink water!",
   "Always remember to take care of yourself, human! >:(", 
-  //"Simbang Gabi tonight, G?"
+  "Simbang Gabi tonight, G?"
 ];
 export const IDLE_CHAT_MIN_S = 15;   // Bibi waits this long (at least) between idle lines
 export const IDLE_CHAT_MAX_S = 30;   // ...and at most this long
