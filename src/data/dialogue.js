@@ -35,7 +35,7 @@ export const TUTORIAL = {
   stinky: "I'm so stinky :(",
   wantsShower: 'Bibi wants to shower!',
   pressE_shower: 'Make them shower by pressing E.',
-  menuShower: 'The Shower icon is highlighted. Press Q to start the shower.',
+  menuShower: 'The Shower icon is highlighted.',
   showered: 'Squeaky clean! Bibi feels so much better.',
 
   bored: 'Uh oh, Bibi is bored! Playing Gift Catch is the best way to make Bibi happy.',
@@ -89,6 +89,7 @@ export const MINIGAME = {
 // ---------- random things Bibi says when idle ----------
 export const IDLE_LINES = [
   "Sobrang cute nila Elisha, Bea, Zak and Kiya, grabe!",
+  "Hi! My name's Bibi! What's yours?",
   "Have an Animo Christmas!",
   "Animo La Salle!",
   "Merry Christmas!",
@@ -103,5 +104,5 @@ export const IDLE_LINES = [
   "Always remember to take care of yourself, human! >:(", 
   "Simbang Gabi tonight, G?"
 ];
-export const IDLE_CHAT_MIN_S = 15;   // Bibi waits this long (at least) between idle lines
-export const IDLE_CHAT_MAX_S = 30;   // ...and at most this long
+export const IDLE_CHAT_MIN_S = 10;   // Bibi waits this long (at least) between idle lines
+export const IDLE_CHAT_MAX_S = 25;   // ...and at most this long
