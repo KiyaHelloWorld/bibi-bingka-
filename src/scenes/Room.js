@@ -253,6 +253,12 @@ export default class Room extends Phaser.Scene {
       this.signal('jump');
     }
     if (a === 'left' || a === 'right') this.signal(a);
+    // asleep: E wakes Bibi up straight away (no menu)
+    if (a === 'settings' && gameState.asleep && this.hudReady && !this.hud.isOpen()) {
+      if (this.bedroom.state === 'inBed' && !this.busy) this.setAsleep(false);
+      return true;
+    }
+
     if (a === 'settings' && !this.minigame.active) {
       if (this.menuAllowed && this.hudReady && !this.busy) {
         this.character.stopWalking();
@@ -399,6 +405,7 @@ export default class Room extends Phaser.Scene {
     gameState.asleep = asleep;
     // waking up during bedtime hours keeps Bibi awake for the rest of that night
     if (!asleep && inSleepWindow()) gameState.wokeNight = nightKey();
+    if (!asleep) this.hud.hideToast(); // drop the "Bibi is sleeping" reminder
     save();
     if (asleep) {
       await this.bedroom.enter();

@@ -91,6 +91,11 @@ export default class HUD extends Phaser.Scene {
     this.counterBox.setVisible(false);
   }
 
+  hideToast() {
+    if (this.toastTimer) this.toastTimer.remove(false);
+    this.toastText.setVisible(false);
+  }
+
   toast(text, ms = 1800) {
     const u = unit(this);
     this.toastText.setStyle(textStyle(this, 16, { color: COLORS.creamHex, backgroundColor: '#4b2e14', padding: { x: 14, y: 6 } }));
