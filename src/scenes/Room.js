@@ -5,6 +5,7 @@ import Tutorial from '../objects/Tutorial.js';
 import GiftCatch from '../objects/GiftCatch.js';
 import Kitchen from '../objects/Kitchen.js';
 import Bedroom from '../objects/Bedroom.js';
+import ShowerRoom from '../objects/ShowerRoom.js';
 import { inSleepWindow, nightKey } from '../systems/clock.js';
 import { controls } from '../systems/controls.js';
 import { beep } from '../systems/sound.js';
@@ -55,6 +56,7 @@ export default class Room extends Phaser.Scene {
     this.minigame = new GiftCatch(this);
     this.kitchen = new Kitchen(this);
     this.bedroom = new Bedroom(this);
+    this.showerRoom = new ShowerRoom(this);
     this.lastInputAt = Date.now();
     this.menuAllowed = true;    // the tutorial turns the menu off and on
     this.menuLock = null;       // the tutorial highlights one menu item
@@ -316,19 +318,24 @@ export default class Room extends Phaser.Scene {
     const c = this.character;
     const u = unit(this);
     c.stopWalking();
-    c.setFacing('front');
+    this.bubble.hide();
+
+    // go to the shower room and stand under the showerhead
+    await this.showerRoom.enter();
     c.setMood('shower');
     beep(1200, 0.05, 3);
 
     const top = c.getTopY();
-    const head = this.add.image(c.x, top - 45 * u, 'fx-showerhead').setScale(9 * u).setDepth(12);
+    const nozzle = this.showerRoom.nozzle();
     const spread = 520 * c.scaleX;
     const drops = this.time.addEvent({
       delay: 40,
       loop: true,
       callback: () => {
-        const d = this.add.image(c.x + Phaser.Math.Between(-spread, spread), top - 10 * u, 'fx-drop').setScale(4 * u).setDepth(13);
-        this.tweens.add({ targets: d, y: c.getBottomY(), alpha: 0.3, duration: 600, onComplete: () => d.destroy() });
+        for (let i = 0; i < 3; i++) { // a full stream of water
+          const d = this.add.image(nozzle.x + Phaser.Math.Between(-spread, spread), nozzle.y, 'fx-drop').setScale(4 * u).setDepth(13);
+          this.tweens.add({ targets: d, y: c.getBottomY(), alpha: 0.3, duration: 600, delay: i * 13, onComplete: () => d.destroy() });
+        }
       },
     });
     const bubbles = this.time.addEvent({
@@ -350,7 +357,6 @@ export default class Room extends Phaser.Scene {
     }
     drops.remove(false);
     bubbles.remove(false);
-    head.destroy();
 
     c.setFacing('front');
     gameState.hygiene = 100;
@@ -359,7 +365,9 @@ export default class Room extends Phaser.Scene {
     this.hud.flash('hygiene');
     this.burst('fx-sparkle', 7);
     beep(1320, 0.06, 3);
-    this.bubble.show(BUBBLES.clean, 2200);
+    this.bubble.show(BUBBLES.clean, 1800);
+    await this.wait(1600);
+    await this.showerRoom.leave(); // back to where Bibi was
     this.busy = false;
     this.refreshMood();
     this.giveCare(1);
@@ -520,12 +528,13 @@ export default class Room extends Phaser.Scene {
     this.minigame?.layout();
     this.kitchen?.layout(); // in the kitchen, Bibi sits in the chair instead
     this.bedroom?.layout(); // in the bedroom, Bibi is by the door or in bed
+    this.showerRoom?.layout(); // in the shower room, Bibi stands on the shower floor
   }
 
   // ---------- time of day ----------
 
   updateTimeOfDay() {
-    if (this.kitchen?.active) return; // check again after mealtime
+    if (this.kitchen?.active || this.showerRoom?.active) return; // check again afterwards
     const hour = new Date().getHours();
     const night = hour >= NIGHTTIME || hour < EARLY_MORNING;
 
@@ -551,7 +560,7 @@ export default class Room extends Phaser.Scene {
       c.isPlayerMoving = false;
     }
 
-    if (!this.kitchen.active && !this.bedroom.active) c.y = this.groundY - c.jumpState.h * this.scale.height * JUMP_HEIGHT;
+    if (!this.kitchen.active && !this.bedroom.active && !this.showerRoom.active) c.y = this.groundY - c.jumpState.h * this.scale.height * JUMP_HEIGHT;
     this.bubble.update();
     this.minigame.update();
 

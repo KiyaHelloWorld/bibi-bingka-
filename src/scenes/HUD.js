@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import StatBar from '../objects/StatBar.js';
+import StatBar, { STAT_BAR_WIDTH, STAT_BAR_HEIGHT } from '../objects/StatBar.js';
 import Narration from '../objects/Narration.js';
 import { controls } from '../systems/controls.js';
 import { beep } from '../systems/sound.js';
@@ -44,9 +44,9 @@ export default class HUD extends Phaser.Scene {
     const u = unit(this);
     Object.values(this.bars).forEach((bar, i) => {
       bar.setVisible(this.statsVisible);
-      bar.place(10 * u + i * 246 * u, 10 * u);
+      bar.place(10 * u + i * (STAT_BAR_WIDTH + 10) * u, 10 * u);
     });
-    this.narration.top = this.statsVisible ? 40 * u : 0;
+    this.narration.top = this.statsVisible ? (STAT_BAR_HEIGHT + 8) * u : 0;
     if (this.narration.visible) this.narration.layout();
     if (this.overlay) this.overlay.rebuild();
     if (this.counterText.visible) this.showCounter(this.counterText.text);
@@ -69,7 +69,7 @@ export default class HUD extends Phaser.Scene {
 
   // space taken by the meters at the top of the screen
   topSpace() {
-    return this.statsVisible ? 44 * unit(this) : 0;
+    return this.statsVisible ? (STAT_BAR_HEIGHT + 12) * unit(this) : 0;
   }
 
   // ---------- Gift Catch counter ----------
@@ -99,7 +99,10 @@ export default class HUD extends Phaser.Scene {
   toast(text, ms = 1800) {
     const u = unit(this);
     this.toastText.setStyle(textStyle(this, 16, { color: COLORS.creamHex, backgroundColor: '#4b2e14', padding: { x: 14, y: 6 } }));
-    this.toastText.setText(text).setPosition(this.scale.width / 2, this.topSpace() + (this.counterText.visible ? 44 : 6) * u).setVisible(true);
+    // below the meters, the Gift Catch counter and the narration box, so nothing gets covered
+    let y = this.topSpace() + (this.counterText.visible ? 44 : 6) * u;
+    if (this.narration.visible && this.narration.position === 'top') y = Math.max(y, this.narration.bottom + 8 * u);
+    this.toastText.setText(text).setPosition(this.scale.width / 2, y).setVisible(true);
     if (this.toastTimer) this.toastTimer.remove(false);
     this.toastTimer = this.time.delayedCall(ms, () => this.toastText.setVisible(false));
   }
@@ -465,7 +468,7 @@ export default class HUD extends Phaser.Scene {
       const area = this.freeArea();
       const w = 300 * u;
       const lh = 26 * u;
-      const barH = 40 * u;
+      const barH = (STAT_BAR_HEIGHT + 8) * u;
       const h = 54 * u + 3 * barH + lines.length * lh + 16 * u;
       const x = width / 2 - w / 2;
       const y = area.top + Math.max(0, (area.height - h - 26 * u) / 2);
@@ -485,7 +488,7 @@ export default class HUD extends Phaser.Scene {
       bars.forEach(([key, label, tex, frame], i) => {
         const bar = new StatBar(this, label, tex, frame);
         bar.parts.forEach((p) => c.add(p));
-        bar.place(x + (w - 236 * u) / 2, y + 50 * u + i * barH);
+        bar.place(x + (w - STAT_BAR_WIDTH * u) / 2, y + 50 * u + i * barH);
         bar.setValue(state[key]);
       });
 
