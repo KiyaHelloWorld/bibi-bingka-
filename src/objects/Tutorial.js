@@ -104,7 +104,8 @@ export default class Tutorial {
     hud.narration.hide(); // out of the way while playing
     room.menuAllowed = false;
     await room.waitFor('minigame:end');
-    await room.wait(1500);
+    await hud.waitForToast(); // let the player read the score first
+    await room.wait(400);
     await say(T.gameDone);
 
     // ----- wrap up -----

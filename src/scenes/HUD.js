@@ -29,6 +29,7 @@ export default class HUD extends Phaser.Scene {
     this.counterBox = this.add.graphics().setDepth(450).setVisible(false);
     this.counterText = this.add.text(0, 0, '', textStyle(this, 20)).setOrigin(0.5).setDepth(451).setVisible(false);
     this.narration = new Narration(this, { position: 'top', depth: 400 });
+    this.narration.onLayout = () => this.placeToast(); // a message already showing moves below the box
     this.toastText = this.add.text(0, 0, '', textStyle(this, 16, {
       color: COLORS.creamHex,
       backgroundColor: '#4b2e14',
@@ -97,14 +98,27 @@ export default class HUD extends Phaser.Scene {
   }
 
   toast(text, ms = 1800) {
-    const u = unit(this);
     this.toastText.setStyle(textStyle(this, 16, { color: COLORS.creamHex, backgroundColor: '#4b2e14', padding: { x: 14, y: 6 } }));
-    // below the meters, the Gift Catch counter and the narration box, so nothing gets covered
+    this.toastText.setText(text).setVisible(true);
+    this.placeToast();
+    if (this.toastTimer) this.toastTimer.remove(false);
+    this.toastUntil = this.time.now + ms;
+    this.toastTimer = this.time.delayedCall(ms, () => this.toastText.setVisible(false));
+  }
+
+  // below the meters, the Gift Catch counter and the narration box, so nothing gets covered
+  placeToast() {
+    if (!this.toastText.visible) return;
+    const u = unit(this);
     let y = this.topSpace() + (this.counterText.visible ? 44 : 6) * u;
     if (this.narration.visible && this.narration.position === 'top') y = Math.max(y, this.narration.bottom + 8 * u);
-    this.toastText.setText(text).setPosition(this.scale.width / 2, y).setVisible(true);
-    if (this.toastTimer) this.toastTimer.remove(false);
-    this.toastTimer = this.time.delayedCall(ms, () => this.toastText.setVisible(false));
+    this.toastText.setPosition(this.scale.width / 2, y);
+  }
+
+  // resolves once the current message has gone
+  waitForToast() {
+    const left = this.toastText.visible ? Math.max(0, (this.toastUntil ?? 0) - this.time.now) : 0;
+    return new Promise((r) => this.time.delayedCall(left, r));
   }
 
   // ---------- overlays ----------
