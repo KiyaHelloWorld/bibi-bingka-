@@ -88,6 +88,7 @@ export const MINIGAME = {
 
 // ---------- random things Bibi says when idle ----------
 export const IDLE_LINES = [
+  "Sobrang cute nila Elisha, Bea, Kiya, and Zak, grabe!",
   "Have an Animo Christmas!",
   "Animo La Salle!",
   "Merry Christmas!",
@@ -96,6 +97,10 @@ export const IDLE_LINES = [
   "Can we play Gift Catch?",
   "I want to eat Bibingka so bad!",
   "Let's go caroling!",
+  "See you at Taft?", 
+  "Jingle bells! Jingle bells! Jingle all the way! Yupiee!",
+  "Don't forget to drink water!",
+  "Always remember to take care of yourself, human! >:(", 
   //"Simbang Gabi tonight, G?"
 ];
 export const IDLE_CHAT_MIN_S = 15;   // Bibi waits this long (at least) between idle lines
