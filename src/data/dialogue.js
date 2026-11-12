@@ -44,7 +44,7 @@ export const TUTORIAL = {
   gameHow: 'Catch every gift! Walk into the low ones with A and D, and jump with W for the high ones.',
   gameDone: 'Great playing! The more gifts you catch, the happier Bibi gets.',
   menuHelp: 'Press E any time to open the menu. A and D move, W jumps a row, Q chooses, and E closes it.',
-  homeHelp: 'Choose Enter House to go inside, and Sleep when Bibi gets tired at night.',
+  homeHelp: 'Choose Enter House to go inside, and Sleep to put Bibi to bed. From 10 PM to 4 AM Bibi sleeps, so wake them up before playing!',
   bye: 'That is everything. Take good care of Bibi!',
 };
 
@@ -66,6 +66,7 @@ export const BUBBLES = {
   outside: 'Fresh air!',
   full: "I'm full! Thank you!",
   sleepy: 'Zzz... so sleepy...',
+  wakeFirst: 'Bibi is sleeping. Press E and choose Wake Up first!',
 };
 
 // ---------- kitchen ----------

@@ -40,6 +40,7 @@ export const EDGE_PADDING = 80;    // how close to the edge it can go
 // needs (0-100), how much they drop per real minute after the tutorial
 export const NEEDS_DECAY_PER_MIN = { hunger: 2, hygiene: 1.5, happy: 1.8 };
 export const LOW_NEED = 25;              // below this Bibi gets sad and complains
+export const VERY_LOW_NEED = 20;         // when ALL needs are below this, Bibi is super sad (crying)
 export const MAX_AWAY_MINUTES = 180;     // most "time away" counted when the game is reopened
 
 // kitchen (mealtime). Numbers are on the 3267 x 2362 kitchen art.
@@ -59,4 +60,21 @@ export const HATCH_PRESSES = 12;
 // time of day (real clock, 24h)
 export const EARLY_MORNING = 5;    // morning_1 starts at 5:00
 export const DAYTIME = 9;          // morning_2 starts at 9:00
-export const NIGHTTIME = 18;       // night starts at 18:00
+export const NIGHTTIME = 18;       // night sky starts at 18:00
+
+// bedtime (real clock): Bibi is asleep in the bedroom from 22:00 to 4:00.
+// Playing during these hours, the player has to wake Bibi up first.
+export const SLEEP_START_HOUR = 22;
+export const SLEEP_END_HOUR = 4;
+
+// bedroom positions, on the 3267 x 2362 bedroom art
+export const BEDROOM = {
+  bibiScale: 0.55,  // Bibi's size in the bedroom
+  doorX: 2950,      // where Bibi appears (by the door)
+  floorY: 2290,     // Bibi's feet when standing on the floor
+  bedFootX: 1650,   // where Bibi stops before hopping onto the bed
+  bedX: 760,        // middle of the bed
+  bedY: 1760,       // Bibi's feet when in bed (smaller = higher)
+  darkness: 0.6,    // how dark the room gets with the light off (0 = no change, 1 = black)
+  darkColor: 0x0b0f2e, // night-blue
+};

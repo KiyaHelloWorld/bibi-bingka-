@@ -19,13 +19,15 @@ const FACES = {
 
 // heads/baby/: animation -> files (the file names are mapped by how each face looks)
 const BABY_ANIMS = {
-  front_idle: ['baby_sad_1'],                 // front, calm (body included)
-  front_sad: ['baby_sad_1', 'baby_sad_2'],    // front, crying (body included)
+  front_idle: ['baby_sad_1'],                      // front, calm (body included)
+  front_sad: ['baby_sad_1', 'baby_sad_2'],         // front, sniffling (body included)
   left_idle: ['baby_left_sad_2'],
-  left_sad: ['baby_left_super_sad_1'],
+  left_sad: ['baby_left_sad_2'],
   right_idle: ['baby_right_sad_1'],
-  right_sad: ['baby_right_super_sad_2'],
-  eating: ['baby_eating'],                    // sits inside the kid body, like the side faces
+  right_sad: ['baby_right_sad_1'],
+  superSad: ['baby_left_super_sad_1', 'baby_right_super_sad_2'], // all needs very low: crying (in the kid body)
+  eating: ['baby_eating'],                         // sits inside the kid body, like the side faces
+  sleep: ['baby_sleep'],                           // sits inside the kid body
 };
 const BABY_FILES = [...new Set(Object.values(BABY_ANIMS).flat())];
 
@@ -65,6 +67,7 @@ export default class Preload extends Phaser.Scene {
     // baby shower face: used automatically once one of these files is added
     this.load.image('baby-shower_baby', 'assets/heads/baby/shower_baby.png');
     this.load.image('baby-baby_shower', 'assets/heads/baby/baby_shower.png');
+    this.load.image('baby-baby_super_sad', 'assets/heads/baby/baby_super_sad.png'); // optional
 
     BACKGROUNDS.forEach((b) => this.load.image(`bg-${b}`, `assets/backgrounds/${b}.png`));
     ITEMS.forEach((it) => this.load.image(`item-${it}`, `assets/items/${it}.png`));
@@ -91,6 +94,11 @@ export default class Preload extends Phaser.Scene {
       repeat: -1,
     });
 
+    // a single baby_super_sad.png, if added, replaces the two super_sad frames
+    if (this.textures.exists('baby-baby_super_sad')) {
+      this.anims.create({ key: 'baby-superSad', frames: [{ key: 'baby-baby_super_sad' }], frameRate: FACE_FPS, repeat: -1 });
+    }
+
     // baby shower face (if the file exists). It may be just the face (sits in the kid body,
     // like baby_eating.png) or the whole baby (like baby_sad_1.png): measured to find out.
     const babyShower = ['baby-shower_baby', 'baby-baby_shower'].find((k) => this.textures.exists(k));
@@ -101,6 +109,7 @@ export default class Preload extends Phaser.Scene {
     }
 
     for (const [name, files] of Object.entries(BABY_ANIMS)) {
+      if (this.anims.exists(`baby-${name}`)) continue;
       this.anims.create({
         key: `baby-${name}`,
         frames: files.map((f) => ({ key: `baby-${f}` })),

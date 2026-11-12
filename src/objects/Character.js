@@ -16,6 +16,10 @@ const BOUNDS = {
 const BABY_FACES = {
   idle: { front: 'baby-front_idle', left: 'baby-left_idle', right: 'baby-right_idle' },
   sad: { front: 'baby-front_sad', left: 'baby-left_sad', right: 'baby-right_sad' },
+  // all needs very low: crying, using the baby super_sad files (they sit in the kid body)
+  superSad: { front: 'baby-superSad', left: 'baby-superSad', right: 'baby-superSad', inBody: true },
+  // baby_sleep.png is a small face too
+  sleep: { front: 'baby-sleep', left: 'baby-sleep', right: 'baby-sleep', inBody: true },
   // baby_eating.png is a small face, so even facing front it sits in the kid body
   eating: { front: 'baby-eating', left: 'baby-eating', right: 'baby-eating', inBody: true },
 };
@@ -154,8 +158,10 @@ export default class Character extends Phaser.GameObjects.Container {
     this.headSprite.setVisible(true).setPosition(headOffsetX, headOffsetY).setScale(headScale);
 
     // try "shower_left" first, then fall back to "sad", "sleep", etc.
-    const directional = `head-${this.mood}_${this.facing}`;
-    const face = this.scene.anims.exists(directional) ? directional : `head-${this.mood}`;
+    // kid/adult have no "super sad" art, so they use the sad face
+    const mood = this.mood === 'superSad' ? 'sad' : this.mood;
+    const directional = `head-${mood}_${this.facing}`;
+    const face = this.scene.anims.exists(directional) ? directional : `head-${mood}`;
     this.play(this.headSprite, face);
   }
 
