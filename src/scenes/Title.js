@@ -16,7 +16,7 @@ export default class Title extends Phaser.Scene {
     cover(this.add.image(0, 0, 'bg-morning_2'), width, height);
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.cream, 0.25);
 
-    this.add.text(width / 2, height * 0.16, 'BIBI BINGKA', textStyle(this, 56, {
+    this.add.text(width / 2, height * 0.16, 'BIBI-BINGKA', textStyle(this, 56, {
       color: '#ffcf57',
       stroke: COLORS.brownHex,
       strokeThickness: Math.max(4, 9 * u),
