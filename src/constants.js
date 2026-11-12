@@ -14,9 +14,9 @@ export const BUTTONS = {
 };
 
 // character size and position (as a fraction of the screen)
-export const CHARACTER_SCREEN_HEIGHT = 0.58; // bigger = bigger character
+export const CHARACTER_SCREEN_HEIGHT = 0.59; // bigger = bigger character
 export const CHARACTER_MAX_SCREEN_WIDTH = 0.9;
-export const GROUND_Y = 0.77;                // 0 = top, 1 = bottom
+export const GROUND_Y = 0.70;                // 0 = top, 1 = bottom
 export const JUMP_HEIGHT = 0.12;             // fraction of the screen height
 export const FACE_FPS = 2;                   // how fast 2-frame faces flip
 

@@ -34,7 +34,7 @@ export default class StatBar {
     if (this.x === undefined) return;
     const u = unit(this.scene);
     const w = 236 * u;
-    const h = 32 * u;
+    const h = 47 * u;
     const { x, y } = this;
     const low = this.value < 45;
     const crit = this.value < 20;
