@@ -66,7 +66,7 @@ export const BUBBLES = {
   outside: 'Fresh air!',
   full: "I'm full! Thank you!",
   sleepy: 'Zzz... so sleepy...',
-  wakeFirst: 'Bibi is sleeping. Press E and choose Wake Up first!',
+  wakeFirst: 'Bibi is sleeping. Press E to wake them up!',
 };
 
 // ---------- kitchen ----------
