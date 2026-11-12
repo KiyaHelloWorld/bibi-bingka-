@@ -58,8 +58,12 @@ export const KITCHEN = {
 export const HATCH_PRESSES = 12;
 
 // time of day (real clock, 24h)
-export const EARLY_MORNING = 5;    // morning_1 starts at 5:00
+// yard backgrounds through the day:
+//   5:00-7:00 sunrise | 7:00-9:00 morning_1 | 9:00-17:00 morning_2 | 17:00-18:00 sunset | 18:00-5:00 night
+export const EARLY_MORNING = 5;    // night ends at 5:00
+export const SUNRISE_END = 7;      // sunrise.png from EARLY_MORNING until 7:00, then morning_1
 export const DAYTIME = 9;          // morning_2 starts at 9:00
+export const SUNSET_START = 17;    // sunrise.png again (sunset) from 17:00 until NIGHTTIME
 export const NIGHTTIME = 18;       // night sky starts at 18:00
 
 // bedtime (real clock): Bibi is asleep in the bedroom from 22:00 to 4:00.

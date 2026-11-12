@@ -24,7 +24,9 @@ import {
   WANDER_DELAY,
   MOVE_SPEED,
   EARLY_MORNING,
+  SUNRISE_END,
   DAYTIME,
+  SUNSET_START,
   NIGHTTIME,
   LOW_NEED,
   MAX_AWAY_MINUTES,
@@ -541,6 +543,7 @@ export default class Room extends Phaser.Scene {
     let bgKey; // (the bedroom is drawn by Bedroom while Bibi sleeps)
     if (gameState.inside) bgKey = 'bg-living_room';
     else if (night) bgKey = 'bg-night';
+    else if (hour < SUNRISE_END || hour >= SUNSET_START) bgKey = 'bg-sunrise'; // sunrise and sunset
     else if (hour < DAYTIME) bgKey = 'bg-morning_1';
     else bgKey = 'bg-morning_2';
     this.bg.setTexture(bgKey);
