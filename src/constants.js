@@ -67,6 +67,10 @@ export const NIGHTTIME = 18;       // night sky starts at 18:00
 export const SLEEP_START_HOUR = 22;
 export const SLEEP_END_HOUR = 4;
 
+// a little growth XP when the player puts Bibi to bed (Sleep button)
+export const SLEEP_XP = 0.5;               // feeding / showering / Gift Catch give 1
+export const SLEEP_XP_COOLDOWN_MIN = 30;   // at most once every 30 minutes (no Sleep/Wake spamming)
+
 // bedroom positions, on the 3267 x 2362 bedroom art
 export const BEDROOM = {
   doorX: 2950,      // where Bibi appears (by the door)
