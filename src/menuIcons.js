@@ -150,19 +150,34 @@ function drawGauge(ctx) {
   circle(ctx, 64, 70, 8);
 }
 
+// fork and spoon, drawn pixel by pixel ('#' = white) so the spoon stays round
+const FORK_SPOON = [
+  '#.#.#......###..',
+  '#.#.#.....#####.',
+  '#.#.#....#######',
+  '#.#.#....#######',
+  '#.#.#....#######',
+  '#.#.#....#######',
+  '#####.....#####.',
+  '#####......###..',
+  '.###........#...',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+  '.###.......###..',
+];
+
 function drawForkKnife(ctx) {
-  // fork
-  for (const x of [38, 46, 54]) roundRect(ctx, x, 30, 5, 24, 2.5);
-  roundRect(ctx, 38, 48, 21, 12, 6);
-  roundRect(ctx, 45, 54, 7, 44, 3.5);
-  // knife
-  ctx.beginPath();
-  ctx.moveTo(76, 30);
-  ctx.quadraticCurveTo(94, 40, 91, 66);
-  ctx.lineTo(77, 66);
-  ctx.closePath();
-  ctx.fill();
-  roundRect(ctx, 77, 60, 8, 38, 4);
+  pixelGlyph(ctx, FORK_SPOON, 5);
 }
 
 function drawBathtub(ctx) {

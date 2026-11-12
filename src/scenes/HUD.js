@@ -20,7 +20,7 @@ export default class HUD extends Phaser.Scene {
 
   create() {
     this.bars = {
-      hunger: new StatBar(this, 'Hunger', 'icon-food_icon', 'crop'),
+      hunger: new StatBar(this, 'Hunger', 'tile-food'),
       hygiene: new StatBar(this, 'Hygiene', 'tile-shower'),
       happy: new StatBar(this, 'Happy', 'tile-heart'),
     };
@@ -478,7 +478,7 @@ export default class HUD extends Phaser.Scene {
       c.add(this.add.text(width / 2, y + 12 * u, "Bibi's Stats", textStyle(this, 24)).setOrigin(0.5, 0));
 
       const bars = [
-        ['hunger', 'Hunger', 'icon-food_icon', 'crop'],
+        ['hunger', 'Hunger', 'tile-food'],
         ['hygiene', 'Hygiene', 'tile-shower'],
         ['happy', 'Happy', 'tile-heart'],
       ];
