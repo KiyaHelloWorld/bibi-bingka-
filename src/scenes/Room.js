@@ -484,16 +484,21 @@ export default class Room extends Phaser.Scene {
 
   // ---------- screen fitting ----------
 
+  // Bibi's normal size (CHARACTER_SCREEN_HEIGHT / CHARACTER_MAX_SCREEN_WIDTH): yard, house and bedroom
+  characterScale() {
+    const { width, height } = this.scale;
+    return Math.min(
+      (height * CHARACTER_SCREEN_HEIGHT) / ASSET_HEIGHT,
+      (width * CHARACTER_MAX_SCREEN_WIDTH) / ASSET_WIDTH,
+    );
+  }
+
   layout() {
     const { width, height } = this.scale;
     cover(this.bg, width, height);
 
     // character size follows the screen size
-    const charScale = Math.min(
-      (height * CHARACTER_SCREEN_HEIGHT) / ASSET_HEIGHT,
-      (width * CHARACTER_MAX_SCREEN_WIDTH) / ASSET_WIDTH,
-    );
-    this.character.setScale(charScale);
+    this.character.setScale(this.characterScale());
     this.groundY = height * GROUND_Y;
     this.character.y = this.groundY;
     const pad = this.character.edge();
