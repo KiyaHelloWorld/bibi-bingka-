@@ -88,11 +88,11 @@ export const MINIGAME = {
 
 // ---------- random things Bibi says when idle ----------
 export const IDLE_LINES = [
-  "Sobrang cute nila Elisha, Bea, Kiya, and Zak, grabe!",
+  "Sobrang cute nila Elisha, Bea, Zak and Kiya, grabe!",
   "Have an Animo Christmas!",
   "Animo La Salle!",
   "Merry Christmas!",
-  "Is it Nocha Buena already?",
+  "Is it Noche Buena already?",
   "Live Jesus in our hearts! Forever!",
   "Can we play Gift Catch?",
   "I want to eat Bibingka so bad!",
